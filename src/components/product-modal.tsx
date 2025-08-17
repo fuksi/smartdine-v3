@@ -281,12 +281,19 @@ export function ProductModal({
                                 <div
                                   key={value.id}
                                   className="flex items-center space-x-3 p-4 rounded-lg hover:bg-gray-50 border border-gray-200 hover:border-[hsl(var(--brand-primary))] transition-all cursor-pointer group"
+                                  onClick={() =>
+                                    handleOptionChange(
+                                      option.id,
+                                      value.id,
+                                      false
+                                    )
+                                  }
                                 >
                                   <RadioGroupItem
                                     value={value.id}
-                                    className="mt-0.5"
+                                    className="mt-0.5 pointer-events-none"
                                   />
-                                  <label className="flex-1 flex justify-between items-center cursor-pointer">
+                                  <div className="flex-1 flex justify-between items-center cursor-pointer">
                                     <span className="font-medium text-gray-900 group-hover:text-[hsl(var(--brand-primary))]">
                                       {value.name}
                                     </span>
@@ -304,7 +311,7 @@ export function ProductModal({
                                         )}
                                       </span>
                                     )}
-                                  </label>
+                                  </div>
                                 </div>
                               ))}
                             </RadioGroup>
@@ -314,6 +321,13 @@ export function ProductModal({
                                 <div
                                   key={value.id}
                                   className="flex items-center space-x-3 p-4 rounded-lg hover:bg-gray-50 border border-gray-200 hover:border-[hsl(var(--brand-primary))] transition-all cursor-pointer group"
+                                  onClick={() =>
+                                    handleOptionChange(
+                                      option.id,
+                                      value.id,
+                                      true
+                                    )
+                                  }
                                 >
                                   <Checkbox
                                     checked={
@@ -328,9 +342,9 @@ export function ProductModal({
                                         true
                                       )
                                     }
-                                    className="mt-0.5"
+                                    className="mt-0.5 pointer-events-none"
                                   />
-                                  <label className="flex-1 flex justify-between items-center cursor-pointer">
+                                  <div className="flex-1 flex justify-between items-center cursor-pointer">
                                     <span className="font-medium text-gray-900 group-hover:text-[hsl(var(--brand-primary))]">
                                       {value.name}
                                     </span>
@@ -348,7 +362,7 @@ export function ProductModal({
                                         )}
                                       </span>
                                     )}
-                                  </label>
+                                  </div>
                                 </div>
                               ))}
                             </div>
