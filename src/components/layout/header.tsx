@@ -1,17 +1,17 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { ShoppingCart } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { useCartStore } from '@/lib/store/cart'
+import Link from "next/link";
+import { ShoppingCart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useCartStore } from "@/lib/store/cart";
 
 interface HeaderProps {
-  merchantName?: string
-  locationName?: string
+  merchantName?: string;
+  locationName?: string;
 }
 
 export function Header({ merchantName, locationName }: HeaderProps) {
-  const totalItems = useCartStore((state) => state.getTotalItems())
+  const totalItems = useCartStore((state) => state.getTotalItems());
 
   return (
     <header className="border-b">
@@ -27,7 +27,7 @@ export function Header({ merchantName, locationName }: HeaderProps) {
               </div>
             )}
           </div>
-          
+
           <Link href="/cart">
             <Button variant="outline" className="relative">
               <ShoppingCart className="h-4 w-4" />
@@ -41,5 +41,5 @@ export function Header({ merchantName, locationName }: HeaderProps) {
         </div>
       </div>
     </header>
-  )
+  );
 }

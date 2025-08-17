@@ -38,7 +38,7 @@ export default async function HomePage() {
                 key={location.id}
                 href={`/restaurant/${merchant.slug}/${location.slug}`}
               >
-                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer bg-white shadow-md border-0 rounded-lg">
+                <Card className="hover:shadow-md transition-shadow cursor-pointer">
                   <CardContent className="p-4">
                     <CardTitle className="text-base mb-2">
                       {location.name}

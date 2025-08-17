@@ -1,6 +1,12 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { prisma } from '@/lib/db'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { prisma } from "@/lib/db";
 
 export default async function AdminOrdersPage() {
   // For now, we'll show a placeholder since we haven't implemented order creation yet
@@ -8,8 +14,8 @@ export default async function AdminOrdersPage() {
     include: {
       location: {
         include: {
-          merchant: true
-        }
+          merchant: true,
+        },
       },
       items: {
         include: {
@@ -17,28 +23,35 @@ export default async function AdminOrdersPage() {
           options: {
             include: {
               option: true,
-              optionValue: true
-            }
-          }
-        }
-      }
+              optionValue: true,
+            },
+          },
+        },
+      },
     },
     orderBy: {
-      createdAt: 'desc'
-    }
-  })
+      createdAt: "desc",
+    },
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PENDING': return 'bg-yellow-100 text-yellow-800'
-      case 'CONFIRMED': return 'bg-blue-100 text-blue-800'
-      case 'PREPARING': return 'bg-orange-100 text-orange-800'
-      case 'READY': return 'bg-green-100 text-green-800'
-      case 'COMPLETED': return 'bg-gray-100 text-gray-800'
-      case 'CANCELLED': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case "PENDING":
+        return "bg-yellow-100 text-yellow-800";
+      case "CONFIRMED":
+        return "bg-blue-100 text-blue-800";
+      case "PREPARING":
+        return "bg-orange-100 text-orange-800";
+      case "READY":
+        return "bg-green-100 text-green-800";
+      case "COMPLETED":
+        return "bg-gray-100 text-gray-800";
+      case "CANCELLED":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -54,7 +67,8 @@ export default async function AdminOrdersPage() {
           <Card>
             <CardContent className="p-8 text-center">
               <p className="text-muted-foreground">
-                No orders yet. Orders will appear here once customers start placing them.
+                No orders yet. Orders will appear here once customers start
+                placing them.
               </p>
             </CardContent>
           </Card>
@@ -94,7 +108,9 @@ export default async function AdminOrdersPage() {
                   )}
                   <div className="flex justify-between">
                     <span>Total:</span>
-                    <span className="font-bold">${order.totalAmount.toFixed(2)}</span>
+                    <span className="font-bold">
+                      ${order.totalAmount.toFixed(2)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Order Time:</span>
@@ -108,14 +124,18 @@ export default async function AdminOrdersPage() {
                     {order.items.map((item) => (
                       <div key={item.id} className="flex justify-between">
                         <div>
-                          <span className="font-medium">{item.product.name}</span>
-                          <span className="text-muted-foreground ml-2">x{item.quantity}</span>
+                          <span className="font-medium">
+                            {item.product.name}
+                          </span>
+                          <span className="text-muted-foreground ml-2">
+                            x{item.quantity}
+                          </span>
                           {item.options.length > 0 && (
                             <div className="text-sm text-muted-foreground ml-4">
                               {item.options.map((opt, idx) => (
                                 <span key={idx}>
                                   {opt.option.name}: {opt.optionValue.name}
-                                  {idx < item.options.length - 1 && ', '}
+                                  {idx < item.options.length - 1 && ", "}
                                 </span>
                               ))}
                             </div>
@@ -132,5 +152,5 @@ export default async function AdminOrdersPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

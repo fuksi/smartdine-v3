@@ -5,6 +5,7 @@ A Next.js-based platform for multiple restaurants to manage their menus and proc
 ## Features
 
 ### Customer Features
+
 - Browse multiple restaurants and locations
 - View detailed menus with categories and products
 - Customize products with options (radio buttons and multi-select)
@@ -13,12 +14,14 @@ A Next.js-based platform for multiple restaurants to manage their menus and proc
 - Real-time cart updates
 
 ### Restaurant Admin Features
+
 - Dashboard overview
 - Order management and tracking
 - Menu management (coming soon)
 - Restaurant settings (coming soon)
 
 ### Platform Features
+
 - Multi-tenant architecture (merchant -> location -> menu structure)
 - Product options with price modifiers
 - Order status tracking
@@ -53,11 +56,13 @@ Order
 ## Getting Started
 
 1. **Install dependencies**:
+
    ```bash
    npm install
    ```
 
 2. **Set up the database**:
+
    ```bash
    npx prisma generate
    npx prisma db push
@@ -65,6 +70,7 @@ Order
    ```
 
 3. **Start the development server**:
+
    ```bash
    npm run dev
    ```
@@ -76,6 +82,7 @@ Order
 ## Sample Data
 
 The seed script creates:
+
 - **Uuno Pizza** restaurant with Jätkäsaari location
 - Sample menu with Pizza, Grill, and Drinks categories
 - Products with various options (sizes, extras, etc.)

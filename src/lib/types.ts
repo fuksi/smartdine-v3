@@ -1,52 +1,69 @@
-import { 
-  Merchant, 
-  MerchantLocation, 
-  Menu, 
-  Category, 
-  Product, 
-  ProductOption, 
+import {
+  Merchant,
+  MerchantLocation,
+  Menu,
+  Category,
+  Product,
+  ProductOption,
   ProductOptionValue,
   Order,
   OrderItem,
-  OrderItemOption
-} from '@prisma/client'
+  OrderItemOption,
+} from "@prisma/client";
 
 export type MerchantWithLocations = Merchant & {
-  locations: MerchantLocation[]
-}
+  locations: MerchantLocation[];
+};
 
 export type LocationWithMenu = MerchantLocation & {
-  merchant: Merchant
-  menu?: MenuWithCategories
-}
+  merchant: Merchant;
+  menu?: MenuWithCategories;
+};
 
 export type MenuWithCategories = Menu & {
-  categories: CategoryWithProducts[]
-}
+  categories: CategoryWithProducts[];
+};
 
 export type CategoryWithProducts = Category & {
-  products: ProductWithOptions[]
-}
+  products: ProductWithOptions[];
+};
 
 export type ProductWithOptions = Product & {
-  options: ProductOptionWithValues[]
-}
+  options: ProductOptionWithValues[];
+};
 
 export type ProductOptionWithValues = ProductOption & {
-  optionValues: ProductOptionValue[]
-}
+  optionValues: ProductOptionValue[];
+};
 
 export type OrderWithItems = Order & {
-  items: OrderItemWithDetails[]
+  items: OrderItemWithDetails[];
   location: MerchantLocation & {
-    merchant: Merchant
-  }
-}
+    merchant: Merchant;
+  };
+};
 
 export type OrderItemWithDetails = OrderItem & {
-  product: Product
+  product: Product;
   options: (OrderItemOption & {
-    option: ProductOption
-    optionValue: ProductOptionValue
-  })[]
-}
+    option: ProductOption;
+    optionValue: ProductOptionValue;
+  })[];
+};
+
+// Serialized types for client components (Decimal -> number)
+export type SerializedProductOptionValue = Omit<
+  ProductOptionValue,
+  "priceModifier"
+> & {
+  priceModifier: number;
+};
+
+export type SerializedProductOption = Omit<ProductOption, "optionValues"> & {
+  optionValues: SerializedProductOptionValue[];
+};
+
+export type SerializedProduct = Omit<Product, "price" | "options"> & {
+  price: number;
+  options: SerializedProductOption[];
+};

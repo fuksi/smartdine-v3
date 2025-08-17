@@ -1,5 +1,10 @@
-import Link from 'next/link'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import Link from "next/link";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function AdminPage() {
   return (
@@ -27,9 +32,7 @@ export default function AdminPage() {
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardHeader>
               <CardTitle>Orders</CardTitle>
-              <CardDescription>
-                View and manage incoming orders
-              </CardDescription>
+              <CardDescription>View and manage incoming orders</CardDescription>
             </CardHeader>
           </Card>
         </Link>
@@ -46,5 +49,5 @@ export default function AdminPage() {
         </Link>
       </div>
     </div>
-  )
+  );
 }

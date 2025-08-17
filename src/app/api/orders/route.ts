@@ -1,24 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const body = await request.json();
     const {
       locationId,
       customerName,
       customerPhone,
       customerEmail,
       items,
-      totalAmount
-    } = body
+      totalAmount,
+    } = body;
 
     // Validate required fields
-    if (!locationId || !customerName || !customerPhone || !items || items.length === 0) {
+    if (
+      !locationId ||
+      !customerName ||
+      !customerPhone ||
+      !items ||
+      items.length === 0
+    ) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: "Missing required fields" },
         { status: 400 }
-      )
+      );
     }
 
     // Create the order
@@ -29,7 +35,7 @@ export async function POST(request: NextRequest) {
         customerPhone,
         customerEmail: customerEmail || null,
         totalAmount: parseFloat(totalAmount),
-        status: 'PENDING',
+        status: "PENDING",
         items: {
           create: items.map((item: any) => ({
             productId: item.productId,
@@ -37,13 +43,14 @@ export async function POST(request: NextRequest) {
             unitPrice: parseFloat(item.unitPrice),
             totalPrice: parseFloat(item.totalPrice),
             options: {
-              create: item.options?.map((option: any) => ({
-                optionId: option.optionId,
-                optionValueId: option.optionValueId,
-              })) || []
-            }
-          }))
-        }
+              create:
+                item.options?.map((option: any) => ({
+                  optionId: option.optionId,
+                  optionValueId: option.optionValueId,
+                })) || [],
+            },
+          })),
+        },
       },
       include: {
         items: {
@@ -52,18 +59,18 @@ export async function POST(request: NextRequest) {
             options: {
               include: {
                 option: true,
-                optionValue: true
-              }
-            }
-          }
+                optionValue: true,
+              },
+            },
+          },
         },
         location: {
           include: {
-            merchant: true
-          }
-        }
-      }
-    })
+            merchant: true,
+          },
+        },
+      },
+    });
 
     return NextResponse.json({
       success: true,
@@ -71,15 +78,14 @@ export async function POST(request: NextRequest) {
         id: order.id,
         status: order.status,
         totalAmount: order.totalAmount,
-        createdAt: order.createdAt
-      }
-    })
-
+        createdAt: order.createdAt,
+      },
+    });
   } catch (error) {
-    console.error('Error creating order:', error)
+    console.error("Error creating order:", error);
     return NextResponse.json(
-      { error: 'Failed to create order' },
+      { error: "Failed to create order" },
       { status: 500 }
-    )
+    );
   }
 }
