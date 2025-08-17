@@ -14,7 +14,7 @@ export function Header({ merchantName, locationName }: HeaderProps) {
   const totalItems = useCartStore((state) => state.getTotalItems());
 
   return (
-    <header className="border-b">
+    <header className="border-b hidden md:block">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div>

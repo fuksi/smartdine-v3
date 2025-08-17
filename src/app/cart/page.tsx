@@ -102,7 +102,7 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
         <div className="text-center py-12">
           <h1 className="text-2xl font-bold mb-4">Your Cart</h1>
           <p className="text-muted-foreground mb-6">
@@ -117,7 +117,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
       <h1 className="text-2xl font-bold mb-6">
         Your Cart ({getTotalItems()} items)
       </h1>
