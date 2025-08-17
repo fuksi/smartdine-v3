@@ -19,6 +19,8 @@ export interface CartItem {
 interface CartState {
   items: CartItem[];
   locationId: string | null;
+  merchantSlug: string | null;
+  locationSlug: string | null;
   customerInfo: {
     name: string;
     phone: string;
@@ -28,7 +30,11 @@ interface CartState {
   removeItem: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
-  setLocation: (locationId: string) => void;
+  setLocation: (
+    locationId: string,
+    merchantSlug?: string,
+    locationSlug?: string
+  ) => void;
   setCustomerInfo: (info: {
     name: string;
     phone: string;
@@ -43,6 +49,8 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       locationId: null,
+      merchantSlug: null,
+      locationSlug: null,
       customerInfo: null,
 
       addItem: (item) => {
@@ -78,11 +86,17 @@ export const useCartStore = create<CartState>()(
       },
 
       clearCart: () => {
-        set({ items: [], customerInfo: null });
+        set({
+          items: [],
+          customerInfo: null,
+          locationId: null,
+          merchantSlug: null,
+          locationSlug: null,
+        });
       },
 
-      setLocation: (locationId) => {
-        set({ locationId });
+      setLocation: (locationId, merchantSlug, locationSlug) => {
+        set({ locationId, merchantSlug, locationSlug });
       },
 
       setCustomerInfo: (info) => {

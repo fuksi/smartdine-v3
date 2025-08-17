@@ -28,9 +28,15 @@ interface Location {
 
 interface RestaurantPageProps {
   location: Location;
+  merchantSlug: string;
+  locationSlug: string;
 }
 
-export function RestaurantPage({ location }: RestaurantPageProps) {
+export function RestaurantPage({
+  location,
+  merchantSlug,
+  locationSlug,
+}: RestaurantPageProps) {
   const [activeCategory, setActiveCategory] = useState<string>("");
   const [showStickyNav, setShowStickyNav] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -39,20 +45,23 @@ export function RestaurantPage({ location }: RestaurantPageProps) {
   const headerRef = useRef<HTMLDivElement>(null);
 
   // Filter products based on search query
-  const filteredCategories = location.menu.categories.map(category => ({
-    ...category,
-    products: category.products.filter(product =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  })).filter(category => category.products.length > 0);
+  const filteredCategories = location.menu.categories
+    .map((category) => ({
+      ...category,
+      products: category.products.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+    }))
+    .filter((category) => category.products.length > 0);
 
   // Handle scroll and intersection observer
   useEffect(() => {
     const observerOptions = {
       root: null,
       rootMargin: "-20% 0px -60% 0px",
-      threshold: 0
+      threshold: 0,
     };
 
     const observer = new IntersectionObserver((entries) => {
@@ -71,7 +80,8 @@ export function RestaurantPage({ location }: RestaurantPageProps) {
     // Handle sticky navigation visibility
     const handleScroll = () => {
       if (headerRef.current) {
-        const headerBottom = headerRef.current.offsetTop + headerRef.current.offsetHeight;
+        const headerBottom =
+          headerRef.current.offsetTop + headerRef.current.offsetHeight;
         const scrollY = window.scrollY;
         setShowStickyNav(scrollY > headerBottom - 100);
       }
@@ -93,7 +103,7 @@ export function RestaurantPage({ location }: RestaurantPageProps) {
       const elementTop = element.offsetTop - headerHeight;
       window.scrollTo({
         top: elementTop,
-        behavior: "smooth"
+        behavior: "smooth",
       });
     }
   };
@@ -109,11 +119,15 @@ export function RestaurantPage({ location }: RestaurantPageProps) {
           <h1 className="text-2xl font-bold mb-2 md:hidden">
             {location.merchant.name}
           </h1>
-          <p className="text-muted-foreground hidden md:block">{location.address}</p>
+          <p className="text-muted-foreground hidden md:block">
+            {location.address}
+          </p>
           {location.phone && (
-            <p className="text-muted-foreground hidden md:block">{location.phone}</p>
+            <p className="text-muted-foreground hidden md:block">
+              {location.phone}
+            </p>
           )}
-          
+
           {/* Search Bar */}
           <div className="mt-6 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -131,15 +145,19 @@ export function RestaurantPage({ location }: RestaurantPageProps) {
         <div
           ref={stickyNavRef}
           className={`sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b transition-all duration-300 ${
-            showStickyNav ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
+            showStickyNav
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 -translate-y-2 pointer-events-none"
           } md:hidden`}
         >
           <div className="container mx-auto px-4">
             <div className="flex space-x-2 py-3 overflow-x-auto scrollbar-hide">
               {location.menu.categories.map((category) => {
-                const hasProducts = filteredCategories.find(c => c.id === category.id);
+                const hasProducts = filteredCategories.find(
+                  (c) => c.id === category.id
+                );
                 if (!hasProducts) return null;
-                
+
                 return (
                   <button
                     key={category.id}
@@ -165,12 +183,14 @@ export function RestaurantPage({ location }: RestaurantPageProps) {
               <section
                 key={category.id}
                 id={category.id}
-                ref={(el) => { 
+                ref={(el) => {
                   categoryRefs.current[category.id] = el;
                 }}
               >
                 <div className="mb-6">
-                  <h2 className="text-2xl font-semibold mb-2">{category.name}</h2>
+                  <h2 className="text-2xl font-semibold mb-2">
+                    {category.name}
+                  </h2>
                   {category.description && (
                     <p className="text-muted-foreground">
                       {category.description}
@@ -184,6 +204,8 @@ export function RestaurantPage({ location }: RestaurantPageProps) {
                       key={product.id}
                       product={product}
                       locationId={location.id}
+                      merchantSlug={merchantSlug}
+                      locationSlug={locationSlug}
                     />
                   ))}
                 </div>
@@ -198,8 +220,8 @@ export function RestaurantPage({ location }: RestaurantPageProps) {
           ) : (
             <div className="text-center py-12">
               <p className="text-muted-foreground">
-                This restaurant doesn&apos;t have any menu items available at the
-                moment.
+                This restaurant doesn&apos;t have any menu items available at
+                the moment.
               </p>
             </div>
           )}

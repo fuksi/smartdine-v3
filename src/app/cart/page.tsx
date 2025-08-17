@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2, ArrowLeft } from "lucide-react";
 import { useCartStore } from "@/lib/store/cart";
 
 export default function CartPage() {
@@ -13,6 +13,8 @@ export default function CartPage() {
     items,
     customerInfo,
     locationId,
+    merchantSlug,
+    locationSlug,
     updateQuantity,
     removeItem,
     clearCart,
@@ -102,7 +104,7 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+      <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
           <h1 className="text-2xl font-bold mb-4">Your Cart</h1>
           <p className="text-muted-foreground mb-6">
@@ -116,8 +118,28 @@ export default function CartPage() {
     );
   }
 
+  // Create the back to menu link
+  const backToMenuHref =
+    merchantSlug && locationSlug
+      ? `/restaurant/${merchantSlug}/${locationSlug}`
+      : "/";
+
   return (
-    <div className="container mx-auto px-4 py-8 pb-24 md:pb-8">
+    <div className="container mx-auto px-4 py-8">
+      {/* Back to menu button */}
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          asChild
+          className="text-[hsl(var(--brand-primary))] hover:text-[hsl(var(--brand-primary-hover))]"
+        >
+          <Link href={backToMenuHref} className="flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to menu
+          </Link>
+        </Button>
+      </div>
+
       <h1 className="text-2xl font-bold mb-6">
         Your Cart ({getTotalItems()} items)
       </h1>

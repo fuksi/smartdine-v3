@@ -9,7 +9,9 @@ interface RestaurantPageProps {
   }>;
 }
 
-export default async function RestaurantPageServer({ params }: RestaurantPageProps) {
+export default async function RestaurantPageServer({
+  params,
+}: RestaurantPageProps) {
   const { merchantSlug, locationSlug } = await params;
 
   const location = await prisma.merchantLocation.findFirst({
@@ -76,5 +78,11 @@ export default async function RestaurantPageServer({ params }: RestaurantPagePro
     },
   };
 
-  return <RestaurantPage location={serializedLocation} />;
+  return (
+    <RestaurantPage
+      location={serializedLocation}
+      merchantSlug={merchantSlug}
+      locationSlug={locationSlug}
+    />
+  );
 }
