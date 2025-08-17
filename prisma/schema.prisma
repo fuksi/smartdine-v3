@@ -1,0 +1,195 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Merchant {
+  id          String            @id @default(uuid())
+  name        String
+  slug        String            @unique
+  description String?
+  logoUrl     String?
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  locations   MerchantLocation[]
+  
+  @@map("merchants")
+}
+
+model MerchantLocation {
+  id          String    @id @default(uuid())
+  merchantId  String
+  name        String
+  slug        String    
+  address     String
+  phone       String?
+  email       String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  merchant    Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  menu        Menu?
+  orders      Order[]
+  
+  @@unique([merchantId, slug])
+  @@map("merchant_locations")
+}
+
+model Menu {
+  id         String            @id @default(uuid())
+  locationId String            @unique
+  name       String            @default("Menu")
+  isActive   Boolean           @default(true)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  
+  location   MerchantLocation  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  categories Category[]
+  
+  @@map("menus")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  menuId      String
+  name        String
+  description String?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  menu        Menu      @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  products    Product[]
+  
+  @@map("categories")
+}
+
+model Product {
+  id          String          @id @default(uuid())
+  categoryId  String
+  name        String
+  description String?
+  price       Decimal
+  imageUrl    String?
+  isAvailable Boolean         @default(true)
+  sortOrder   Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  
+  category    Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  options     ProductOption[]
+  orderItems  OrderItem[]
+  
+  @@map("products")
+}
+
+model ProductOption {
+  id            String                    @id @default(uuid())
+  productId     String
+  name          String
+  description   String?
+  type          ProductOptionType
+  isRequired    Boolean                   @default(false)
+  sortOrder     Int                       @default(0)
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+  
+  product       Product                   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  optionValues  ProductOptionValue[]
+  orderItemOptions OrderItemOption[]
+  
+  @@map("product_options")
+}
+
+model ProductOptionValue {
+  id              String                    @id @default(uuid())
+  optionId        String
+  name            String
+  priceModifier   Decimal                   @default(0)
+  isDefault       Boolean                   @default(false)
+  sortOrder       Int                       @default(0)
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  
+  option          ProductOption             @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  orderItemOptions OrderItemOption[]
+  
+  @@map("product_option_values")
+}
+
+model Order {
+  id          String            @id @default(uuid())
+  locationId  String
+  customerName String
+  customerPhone String
+  customerEmail String?
+  totalAmount Decimal
+  status      OrderStatus       @default(PENDING)
+  pickupTime  DateTime?
+  notes       String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  
+  location    MerchantLocation  @relation(fields: [locationId], references: [id])
+  items       OrderItem[]
+  
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String                @id @default(uuid())
+  orderId     String
+  productId   String
+  quantity    Int
+  unitPrice   Decimal
+  totalPrice  Decimal
+  createdAt   DateTime              @default(now())
+  
+  order       Order                 @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product               @relation(fields: [productId], references: [id])
+  options     OrderItemOption[]
+  
+  @@map("order_items")
+}
+
+model OrderItemOption {
+  id            String                @id @default(uuid())
+  orderItemId   String
+  optionId      String
+  optionValueId String
+  createdAt     DateTime              @default(now())
+  
+  orderItem     OrderItem             @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  option        ProductOption         @relation(fields: [optionId], references: [id])
+  optionValue   ProductOptionValue    @relation(fields: [optionValueId], references: [id])
+  
+  @@map("order_item_options")
+}
+
+enum ProductOptionType {
+  RADIO
+  MULTISELECT
+  
+  @@map("product_option_type")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+  
+  @@map("order_status")
+}
