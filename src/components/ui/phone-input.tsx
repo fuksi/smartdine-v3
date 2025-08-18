@@ -61,7 +61,10 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
           if (value.startsWith("0") && defaultCountry === "FI") {
             // Try parsing without the leading 0
             const withoutZero = value.substring(1);
-            const parsedWithoutZero = parsePhoneNumber(withoutZero, defaultCountry as CountryCode);
+            const parsedWithoutZero = parsePhoneNumber(
+              withoutZero,
+              defaultCountry as CountryCode
+            );
             if (parsedWithoutZero) {
               setSelectedCountry(parsedWithoutZero.country || defaultCountry);
               setPhoneInput(parsedWithoutZero.nationalNumber);
@@ -92,13 +95,13 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
   const formatAndValidatePhone = (input: string, country: string) => {
     try {
       let cleanedInput = input;
-      
+
       // Special handling for Finnish numbers with leading 0
       if (country === "FI" && input.startsWith("0")) {
         // Remove leading 0 for Finnish numbers (e.g., 0401234567 -> 401234567)
         cleanedInput = input.substring(1);
       }
-      
+
       const asYouType = new AsYouType(country as CountryCode);
       asYouType.input(cleanedInput);
       const phoneNumber = asYouType.getNumber();

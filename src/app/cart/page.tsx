@@ -331,8 +331,9 @@ export default function CartPage() {
                     className="w-full"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Enter your Finnish number without the leading 0 (e.g., 401234567 instead of 0401234567). 
-                    If you include the 0, it will be automatically converted.
+                    Enter your Finnish number without the leading 0 (e.g.,
+                    401234567 instead of 0401234567). If you include the 0, it
+                    will be automatically converted.
                   </p>
                 </div>
 

@@ -41,15 +41,15 @@ const formatCurrency = (amount: number): string => {
 const isFinnishPhoneNumber = (phone: string): boolean => {
   // Remove spaces, dashes, and plus signs for checking
   const cleanPhone = phone.replace(/[\s\-\+]/g, "");
-  
+
   // Check if it starts with Finnish country code or is a Finnish mobile number
   // Finnish mobile numbers: +358 4X, +358 5X, or domestic format 04X, 05X
   const finnishPatterns = [
     /^358[45]\d{7,8}$/, // +358 4X or +358 5X format
     /^0[45]\d{7,8}$/, // Domestic 04X or 05X format
   ];
-  
-  return finnishPatterns.some(pattern => pattern.test(cleanPhone));
+
+  return finnishPatterns.some((pattern) => pattern.test(cleanPhone));
 };
 
 async function sendPushbulletSMS(title: string, body: string): Promise<void> {
@@ -84,18 +84,20 @@ async function sendPushbulletSMS(title: string, body: string): Promise<void> {
 
 export async function sendOrderAcceptedSMS(data: OrderSMSData) {
   if (!isFinnishPhoneNumber(data.customerPhone)) {
-    console.log(`📱 Skipping SMS for non-Finnish number: ${data.customerPhone}`);
+    console.log(
+      `📱 Skipping SMS for non-Finnish number: ${data.customerPhone}`
+    );
     return;
   }
 
   const title = `Order #${formatDisplayId(data.displayId)} Accepted`;
-  
+
   const itemsText = data.items
-    .map(item => {
+    .map((item) => {
       let itemText = `${item.quantity}x ${item.name}`;
       if (item.options && item.options.length > 0) {
         const optionsText = item.options
-          .map(opt => `${opt.optionName}: ${opt.valueName}`)
+          .map((opt) => `${opt.optionName}: ${opt.valueName}`)
           .join(", ");
         itemText += ` (${optionsText})`;
       }
@@ -114,7 +116,11 @@ Order Details:
 ${itemsText}
 
 Total: ${formatCurrency(data.totalAmount)}
-${data.estimatedPickupTime ? `Estimated pickup: ${data.estimatedPickupTime}` : ""}
+${
+  data.estimatedPickupTime
+    ? `Estimated pickup: ${data.estimatedPickupTime}`
+    : ""
+}
 
 Thank you for your order!`;
 
@@ -123,12 +129,14 @@ Thank you for your order!`;
 
 export async function sendOrderReadySMS(data: OrderSMSData) {
   if (!isFinnishPhoneNumber(data.customerPhone)) {
-    console.log(`📱 Skipping SMS for non-Finnish number: ${data.customerPhone}`);
+    console.log(
+      `📱 Skipping SMS for non-Finnish number: ${data.customerPhone}`
+    );
     return;
   }
 
   const title = `Order #${formatDisplayId(data.displayId)} Ready`;
-  
+
   const body = `Hello ${data.customerName}!
 
 Your order #${formatDisplayId(data.displayId)} is ready for pickup!
@@ -147,15 +155,19 @@ Thank you!`;
 
 export async function sendOrderRejectedSMS(data: OrderSMSData) {
   if (!isFinnishPhoneNumber(data.customerPhone)) {
-    console.log(`📱 Skipping SMS for non-Finnish number: ${data.customerPhone}`);
+    console.log(
+      `📱 Skipping SMS for non-Finnish number: ${data.customerPhone}`
+    );
     return;
   }
 
   const title = `Order #${formatDisplayId(data.displayId)} Cannot be Fulfilled`;
-  
+
   const body = `Hello ${data.customerName},
 
-We regret to inform you that your order #${formatDisplayId(data.displayId)} cannot be fulfilled at this time.
+We regret to inform you that your order #${formatDisplayId(
+    data.displayId
+  )} cannot be fulfilled at this time.
 
 ${data.merchantName} - ${data.locationName}
 
