@@ -18,9 +18,9 @@ async function main() {
         isActive: true,
       },
     });
-    console.log("Created superadmin:", superAdmin.email);
+    console.log("✓ Created superadmin:", superAdmin.email);
   } else {
-    console.log("Superadmin already exists:", superAdmin.email);
+    console.log("✓ Superadmin already exists:", superAdmin.email);
   }
 
   // Create or find merchant
@@ -38,6 +38,9 @@ async function main() {
         isActive: true,
       },
     });
+    console.log("✓ Created merchant:", merchant.name);
+  } else {
+    console.log("✓ Merchant already exists:", merchant.name);
   }
 
   // Create or find location
@@ -62,6 +65,9 @@ async function main() {
         isActive: true,
       },
     });
+    console.log("✓ Created location:", location.name);
+  } else {
+    console.log("✓ Location already exists:", location.name);
   }
 
   // Create opening hours
@@ -95,170 +101,298 @@ async function main() {
   }
 
   // Create admin user for testing if doesn't exist
+  console.log("Checking for admin user: test@outlook.com");
   const existingAdmin = await prisma.adminUser.findUnique({
     where: { email: "test@outlook.com" },
   });
 
   if (!existingAdmin) {
-    await prisma.adminUser.create({
+    console.log("Creating admin user: test@outlook.com");
+    const newAdmin = await prisma.adminUser.create({
       data: {
         email: "test@outlook.com",
         locationId: location.id,
         isActive: true,
       },
     });
+    console.log(
+      "Created admin user:",
+      newAdmin.email,
+      "for location:",
+      location.name
+    );
+  } else {
+    console.log("Admin user already exists:", existingAdmin.email);
   }
 
   // Create menu
-  const menu = await prisma.menu.create({
-    data: {
-      locationId: location.id,
-      name: "Main Menu",
-      isActive: true,
-    },
+  let menu = await prisma.menu.findFirst({
+    where: { locationId: location.id },
   });
+
+  if (!menu) {
+    menu = await prisma.menu.create({
+      data: {
+        locationId: location.id,
+        name: "Main Menu",
+        isActive: true,
+      },
+    });
+    console.log("✓ Created menu:", menu.name);
+  } else {
+    console.log("✓ Menu already exists:", menu.name);
+  }
 
   // Create categories
-  const pizzaCategory = await prisma.category.create({
-    data: {
-      menuId: menu.id,
-      name: "Pizza",
-      description: "Fresh handmade pizzas",
-      sortOrder: 1,
-      isActive: true,
-    },
+  let pizzaCategory = await prisma.category.findFirst({
+    where: { menuId: menu.id, name: "Pizza" },
   });
 
-  const grillCategory = await prisma.category.create({
-    data: {
-      menuId: menu.id,
-      name: "Grill",
-      description: "Grilled specialties",
-      sortOrder: 2,
-      isActive: true,
-    },
+  if (!pizzaCategory) {
+    pizzaCategory = await prisma.category.create({
+      data: {
+        menuId: menu.id,
+        name: "Pizza",
+        description: "Fresh handmade pizzas",
+        sortOrder: 1,
+        isActive: true,
+      },
+    });
+    console.log("✓ Created category:", pizzaCategory.name);
+  } else {
+    console.log("✓ Pizza category already exists");
+  }
+
+  let grillCategory = await prisma.category.findFirst({
+    where: { menuId: menu.id, name: "Grill" },
   });
 
-  const drinksCategory = await prisma.category.create({
-    data: {
-      menuId: menu.id,
-      name: "Drinks",
-      description: "Beverages and drinks",
-      sortOrder: 3,
-      isActive: true,
-    },
+  if (!grillCategory) {
+    grillCategory = await prisma.category.create({
+      data: {
+        menuId: menu.id,
+        name: "Grill",
+        description: "Grilled specialties",
+        sortOrder: 2,
+        isActive: true,
+      },
+    });
+    console.log("✓ Created category:", grillCategory.name);
+  } else {
+    console.log("✓ Grill category already exists");
+  }
+
+  let drinksCategory = await prisma.category.findFirst({
+    where: { menuId: menu.id, name: "Drinks" },
   });
+
+  if (!drinksCategory) {
+    drinksCategory = await prisma.category.create({
+      data: {
+        menuId: menu.id,
+        name: "Drinks",
+        description: "Beverages and drinks",
+        sortOrder: 3,
+        isActive: true,
+      },
+    });
+    console.log("✓ Created category:", drinksCategory.name);
+  } else {
+    console.log("✓ Drinks category already exists");
+  }
 
   // Create pizza products
-  const margherita = await prisma.product.create({
-    data: {
-      categoryId: pizzaCategory.id,
-      name: "Margherita",
-      description: "Classic pizza with tomato sauce, mozzarella, and basil",
-      price: 12.5,
-      imageUrl: null,
-      isAvailable: true,
-      sortOrder: 1,
-    },
+  let margherita = await prisma.product.findFirst({
+    where: { categoryId: pizzaCategory.id, name: "Margherita" },
   });
 
-  const pepperoni = await prisma.product.create({
-    data: {
-      categoryId: pizzaCategory.id,
-      name: "Pepperoni",
-      description: "Pizza with tomato sauce, mozzarella, and pepperoni",
-      price: 14.9,
-      imageUrl: null,
-      isAvailable: true,
-      sortOrder: 2,
-    },
+  if (!margherita) {
+    margherita = await prisma.product.create({
+      data: {
+        categoryId: pizzaCategory.id,
+        name: "Margherita",
+        description: "Classic pizza with tomato sauce, mozzarella, and basil",
+        price: 12.5,
+        imageUrl: null,
+        isAvailable: true,
+        sortOrder: 1,
+      },
+    });
+    console.log("✓ Created product:", margherita.name);
+  } else {
+    console.log("✓ Margherita pizza already exists");
+  }
+
+  let pepperoni = await prisma.product.findFirst({
+    where: { categoryId: pizzaCategory.id, name: "Pepperoni" },
   });
+
+  if (!pepperoni) {
+    pepperoni = await prisma.product.create({
+      data: {
+        categoryId: pizzaCategory.id,
+        name: "Pepperoni",
+        description: "Pizza with tomato sauce, mozzarella, and pepperoni",
+        price: 14.9,
+        imageUrl: null,
+        isAvailable: true,
+        sortOrder: 2,
+      },
+    });
+    console.log("✓ Created product:", pepperoni.name);
+  } else {
+    console.log("✓ Pepperoni pizza already exists");
+  }
 
   // Create grill products
-  const burger = await prisma.product.create({
-    data: {
-      categoryId: grillCategory.id,
-      name: "Classic Burger",
-      description: "Beef patty with lettuce, tomato, onion, and sauce",
-      price: 13.5,
-      imageUrl: null,
-      isAvailable: true,
-      sortOrder: 1,
-    },
+  let burger = await prisma.product.findFirst({
+    where: { categoryId: grillCategory.id, name: "Classic Burger" },
   });
+
+  if (!burger) {
+    burger = await prisma.product.create({
+      data: {
+        categoryId: grillCategory.id,
+        name: "Classic Burger",
+        description: "Beef patty with lettuce, tomato, onion, and sauce",
+        price: 13.5,
+        imageUrl: null,
+        isAvailable: true,
+        sortOrder: 1,
+      },
+    });
+    console.log("✓ Created product:", burger.name);
+  } else {
+    console.log("✓ Classic Burger already exists");
+  }
 
   // Create a customizable sandwich with multiple option types
-  const customSandwich = await prisma.product.create({
-    data: {
-      categoryId: grillCategory.id,
-      name: "Build Your Own Sandwich",
-      description: "Create your perfect sandwich with our fresh ingredients",
-      price: 8.9,
-      imageUrl: null,
-      isAvailable: true,
-      sortOrder: 2,
-    },
+  let customSandwich = await prisma.product.findFirst({
+    where: { categoryId: grillCategory.id, name: "Build Your Own Sandwich" },
   });
+
+  if (!customSandwich) {
+    customSandwich = await prisma.product.create({
+      data: {
+        categoryId: grillCategory.id,
+        name: "Build Your Own Sandwich",
+        description: "Create your perfect sandwich with our fresh ingredients",
+        price: 8.9,
+        imageUrl: null,
+        isAvailable: true,
+        sortOrder: 2,
+      },
+    });
+    console.log("✓ Created product:", customSandwich.name);
+  } else {
+    console.log("✓ Custom Sandwich already exists");
+  }
 
   // Create burger with comprehensive options
-  const premiumBurger = await prisma.product.create({
-    data: {
-      categoryId: grillCategory.id,
-      name: "Premium Gourmet Burger",
-      description: "Premium beef patty with artisan buns and gourmet toppings",
-      price: 16.9,
-      imageUrl: null,
-      isAvailable: true,
-      sortOrder: 3,
-    },
+  let premiumBurger = await prisma.product.findFirst({
+    where: { categoryId: grillCategory.id, name: "Premium Gourmet Burger" },
   });
+
+  if (!premiumBurger) {
+    premiumBurger = await prisma.product.create({
+      data: {
+        categoryId: grillCategory.id,
+        name: "Premium Gourmet Burger",
+        description:
+          "Premium beef patty with artisan buns and gourmet toppings",
+        price: 16.9,
+        imageUrl: null,
+        isAvailable: true,
+        sortOrder: 3,
+      },
+    });
+    console.log("✓ Created product:", premiumBurger.name);
+  } else {
+    console.log("✓ Premium Burger already exists");
+  }
 
   // Create drink products
-  const cola = await prisma.product.create({
-    data: {
-      categoryId: drinksCategory.id,
-      name: "Coca Cola",
-      description: "Classic cola drink",
-      price: 2.5,
-      imageUrl: null,
-      isAvailable: true,
-      sortOrder: 1,
-    },
+  let cola = await prisma.product.findFirst({
+    where: { categoryId: drinksCategory.id, name: "Coca Cola" },
   });
+
+  if (!cola) {
+    cola = await prisma.product.create({
+      data: {
+        categoryId: drinksCategory.id,
+        name: "Coca Cola",
+        description: "Classic cola drink",
+        price: 2.5,
+        imageUrl: null,
+        isAvailable: true,
+        sortOrder: 1,
+      },
+    });
+    console.log("✓ Created product:", cola.name);
+  } else {
+    console.log("✓ Coca Cola already exists");
+  }
 
   // Create product options
-  const pizzaSizeOption = await prisma.productOption.create({
-    data: {
-      productId: margherita.id,
-      name: "Size",
-      description: "Choose your pizza size",
-      type: "RADIO",
-      isRequired: true,
-      sortOrder: 1,
-    },
+  let pizzaSizeOption = await prisma.productOption.findFirst({
+    where: { productId: margherita.id, name: "Size" },
   });
 
-  const pizzaSizeOption2 = await prisma.productOption.create({
-    data: {
-      productId: pepperoni.id,
-      name: "Size",
-      description: "Choose your pizza size",
-      type: "RADIO",
-      isRequired: true,
-      sortOrder: 1,
-    },
+  if (!pizzaSizeOption) {
+    pizzaSizeOption = await prisma.productOption.create({
+      data: {
+        productId: margherita.id,
+        name: "Size",
+        description: "Choose your pizza size",
+        type: "RADIO",
+        isRequired: true,
+        sortOrder: 1,
+      },
+    });
+    console.log("✓ Created option: Size for Margherita");
+  } else {
+    console.log("✓ Size option for Margherita already exists");
+  }
+
+  let pizzaSizeOption2 = await prisma.productOption.findFirst({
+    where: { productId: pepperoni.id, name: "Size" },
   });
 
-  const burgerExtrasOption = await prisma.productOption.create({
-    data: {
-      productId: burger.id,
-      name: "Extras",
-      description: "Add extra toppings",
-      type: "MULTISELECT",
-      isRequired: false,
-      sortOrder: 1,
-    },
+  if (!pizzaSizeOption2) {
+    pizzaSizeOption2 = await prisma.productOption.create({
+      data: {
+        productId: pepperoni.id,
+        name: "Size",
+        description: "Choose your pizza size",
+        type: "RADIO",
+        isRequired: true,
+        sortOrder: 1,
+      },
+    });
+    console.log("✓ Created option: Size for Pepperoni");
+  } else {
+    console.log("✓ Size option for Pepperoni already exists");
+  }
+
+  let burgerExtrasOption = await prisma.productOption.findFirst({
+    where: { productId: burger.id, name: "Extras" },
   });
+
+  if (!burgerExtrasOption) {
+    burgerExtrasOption = await prisma.productOption.create({
+      data: {
+        productId: burger.id,
+        name: "Extras",
+        description: "Add extra toppings",
+        type: "MULTISELECT",
+        isRequired: false,
+        sortOrder: 1,
+      },
+    });
+    console.log("✓ Created option: Extras for Burger");
+  } else {
+    console.log("✓ Extras option for Burger already exists");
+  }
 
   // Premium burger options - Multiple comprehensive option types
   const burgerSizeOption = await prisma.productOption.create({
@@ -571,7 +705,7 @@ async function main() {
     ],
   });
 
-  console.log("Seed completed successfully!");
+  console.log("✅ Seed completed successfully!");
 }
 
 main()

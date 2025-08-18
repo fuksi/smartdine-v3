@@ -11,8 +11,7 @@ const testCheckout = async () => {
       },
       body: JSON.stringify({
         orderId: "test-order-123",
-        successUrl:
-          "http://localhost:3002/your-order?id=test-order-123",
+        successUrl: "http://localhost:3002/your-order?id=test-order-123",
         cancelUrl: "http://localhost:3002/cart",
       }),
     });

@@ -250,7 +250,7 @@ export default function AdminOrdersPage() {
                           key={action}
                           size="sm"
                           variant={
-                            action === "REJECTED" ? "destructive" : "default"
+                            action === "REJECTED" ? "destructive" : "brand" // Use brand (primary) color for positive actions
                           }
                           onClick={() =>
                             updateOrderStatus(order.id, action as OrderStatus)

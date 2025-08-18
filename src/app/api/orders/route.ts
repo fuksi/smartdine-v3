@@ -1,5 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { generateOrderDisplayId } from "@/lib/order-utils";
+
+// Types for the request body
+interface OrderItemInput {
+  productId: string;
+  quantity: number;
+  unitPrice: string;
+  totalPrice: string;
+  options?: Array<{
+    optionId: string;
+    optionValueId: string;
+  }>;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,6 +40,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Generate a unique display ID for the order
+    const displayId = await generateOrderDisplayId();
+
     // Create the order
     const order = await prisma.order.create({
       data: {
@@ -37,15 +53,16 @@ export async function POST(request: NextRequest) {
         totalAmount: parseFloat(totalAmount),
         status: "PLACED",
         fulfilmentType: "PICKUP",
+        displayId,
         items: {
-          create: items.map((item: any) => ({
+          create: items.map((item: OrderItemInput) => ({
             productId: item.productId,
             quantity: item.quantity,
             unitPrice: parseFloat(item.unitPrice),
             totalPrice: parseFloat(item.totalPrice),
             options: {
               create:
-                item.options?.map((option: any) => ({
+                item.options?.map((option) => ({
                   optionId: option.optionId,
                   optionValueId: option.optionValueId,
                 })) || [],
@@ -77,6 +94,7 @@ export async function POST(request: NextRequest) {
       success: true,
       order: {
         id: order.id,
+        displayId: order.displayId,
         status: order.status,
         totalAmount: order.totalAmount,
         createdAt: order.createdAt,

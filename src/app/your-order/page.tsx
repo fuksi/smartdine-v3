@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatDisplayId } from "@/lib/order-utils";
 import {
   Clock,
   CheckCircle,
@@ -43,6 +44,7 @@ interface OrderItem {
 
 interface Order {
   id: string;
+  displayId: number;
   customerName: string;
   customerPhone: string;
   customerEmail?: string;
@@ -194,7 +196,9 @@ export default function YourOrderPage() {
             <div className="space-y-4">
               <div className="flex justify-between">
                 <span className="font-medium">Order #</span>
-                <span className="font-mono text-sm">{order.id.slice(-8)}</span>
+                <span className="font-mono text-sm">
+                  {formatDisplayId(order.displayId)}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Order Time</span>

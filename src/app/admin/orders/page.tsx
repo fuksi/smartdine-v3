@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { formatDisplayId } from "@/lib/order-utils";
 import {
   Clock,
   CheckCircle,
@@ -46,6 +47,7 @@ interface OrderItem {
 
 interface Order {
   id: string;
+  displayId: number;
   customerName: string;
   customerPhone: string;
   customerEmail?: string;
@@ -233,7 +235,7 @@ export default function AdminOrdersPage() {
                       <div className="flex items-center gap-3 mb-2">
                         <StatusIcon className="h-5 w-5" />
                         <CardTitle className="text-lg">
-                          Order #{order.id.slice(-8)}
+                          Order #{formatDisplayId(order.displayId)}
                         </CardTitle>
                         <Badge className={getStatusBadgeColor(order.status)}>
                           {statusConfig[order.status].label}
@@ -250,7 +252,7 @@ export default function AdminOrdersPage() {
                           key={action}
                           size="sm"
                           variant={
-                            action === "REJECTED" ? "destructive" : "default"
+                            action === "REJECTED" ? "destructive" : "brand" // Use brand (primary) color for positive actions
                           }
                           onClick={() =>
                             updateOrderStatus(order.id, action as OrderStatus)

@@ -138,6 +138,7 @@ model ProductOptionValue {
 
 model Order {
   id          String            @id @default(uuid())
+  displayId   Int               @unique // 4-digit friendly display ID for UI
   locationId  String
   customerName String
   customerPhone String
