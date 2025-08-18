@@ -11,12 +11,13 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { CheckCircle } from "lucide-react";
 
-function OrderSuccessContent({
+async function OrderSuccessContent({
   searchParams,
 }: {
-  searchParams: { order_id?: string };
+  searchParams: Promise<{ order_id?: string }>;
 }) {
-  const orderId = searchParams.order_id;
+  const resolvedParams = await searchParams;
+  const orderId = resolvedParams.order_id;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -61,7 +62,7 @@ function OrderSuccessContent({
 export default function OrderSuccessPage({
   searchParams,
 }: {
-  searchParams: { order_id?: string };
+  searchParams: Promise<{ order_id?: string }>;
 }) {
   return (
     <Suspense fallback={<div>Loading...</div>}>

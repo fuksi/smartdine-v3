@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, StampCard } from "@prisma/client";
 import { parsePhoneNumber } from "libphonenumber-js";
 
 const prisma = new PrismaClient();
@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    let stampCards;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let stampCards: Array<any> = [];
 
     if (recent === "true") {
       // Get last 30 created stampcards
@@ -68,7 +69,8 @@ export async function GET(request: NextRequest) {
     const stampCardsWithCounts = stampCards.map((card) => {
       const totalStamps = card.stamps.length;
       const claimedStamps = card.stamps.filter(
-        (stamp) => stamp.isClaimed
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (stamp: any) => stamp.isClaimed
       ).length;
       const unclaimedStamps = totalStamps - claimedStamps;
       const canClaim = unclaimedStamps >= card.stampsRequired;

@@ -107,6 +107,8 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
                     key={product.id}
                     product={product}
                     locationId={serializedLocation.id}
+                    merchantSlug={merchantSlug}
+                    locationSlug={locationSlug}
                   />
                 ))}
               </div>

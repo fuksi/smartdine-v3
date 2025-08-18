@@ -33,6 +33,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!adminUser.location) {
+      return NextResponse.json(
+        { error: "Admin user location not found" },
+        { status: 400 }
+      );
+    }
+
     // In local environment, skip OTP verification
     if (!isLocalEnvironment()) {
       if (!otp) {

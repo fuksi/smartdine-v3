@@ -72,10 +72,15 @@ export async function verifyAdminSession(
       return null;
     }
 
+    if (!session.user.location) {
+      console.error("Admin user has no location assigned");
+      return null;
+    }
+
     return {
       id: session.user.id,
       email: session.user.email,
-      locationId: session.user.locationId,
+      locationId: session.user.locationId!,
       location: {
         id: session.user.location.id,
         name: session.user.location.name,

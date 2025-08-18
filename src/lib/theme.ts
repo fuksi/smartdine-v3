@@ -89,9 +89,9 @@ export function hexToHSL(hex: string): string {
 
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
-  let h: number, s: number, l: number;
+  let h: number, s: number;
 
-  l = (max + min) / 2;
+  const l = (max + min) / 2;
 
   if (max === min) {
     h = s = 0;

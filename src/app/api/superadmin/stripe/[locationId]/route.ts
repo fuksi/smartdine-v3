@@ -4,17 +4,18 @@ import { prisma } from "@/lib/db";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { locationId: string } }
+  { params }: { params: Promise<{ locationId: string }> }
 ) {
   try {
     await requireSuperAdminAuth(request);
+    const { locationId } = await params;
 
     const { stripeConnectAccountId, stripeConnectEnabled } =
       await request.json();
 
     // Validate location exists
     const location = await prisma.merchantLocation.findUnique({
-      where: { id: params.locationId },
+      where: { id: locationId },
     });
 
     if (!location) {
@@ -26,7 +27,7 @@ export async function PUT(
 
     // Update Stripe Connect details
     const updatedLocation = await prisma.merchantLocation.update({
-      where: { id: params.locationId },
+      where: { id: locationId },
       data: {
         stripeConnectAccountId:
           stripeConnectAccountId && stripeConnectAccountId.trim()

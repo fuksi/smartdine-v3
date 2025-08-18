@@ -222,122 +222,125 @@ export function ProductModal({
                   </div>
                 </div>
 
-            {product.options.map((option) => {
-              const hasError = validationErrors.has(option.id);
-              return (
-                <div key={option.id} className="space-y-2">
-                  <div className="font-medium">
-                    {option.name}
-                    {option.isRequired && (
-                      <span className="text-red-500"> *</span>
-                    )}
-                  </div>
+                {product.options.map((option) => {
+                  const hasError = validationErrors.has(option.id);
+                  return (
+                    <div key={option.id} className="space-y-2">
+                      <div className="font-medium">
+                        {option.name}
+                        {option.isRequired && (
+                          <span className="text-red-500"> *</span>
+                        )}
+                      </div>
 
-                  {hasError && (
-                    <div className="flex items-center gap-1 text-sm text-red-500 mb-2">
-                      <AlertCircle className="h-4 w-4" />
-                      <span>Please select {option.name.toLowerCase()}</span>
-                    </div>
-                  )}
+                      {hasError && (
+                        <div className="flex items-center gap-1 text-sm text-red-500 mb-2">
+                          <AlertCircle className="h-4 w-4" />
+                          <span>Please select {option.name.toLowerCase()}</span>
+                        </div>
+                      )}
 
-                  {option.type === "RADIO" ? (
-                    <RadioGroup.Root
-                      value={selectedOptions[option.id]?.[0] || ""}
-                      onValueChange={(value) =>
-                        handleOptionChange(option.id, value, false)
-                      }
-                      className={
-                        hasError ? "ring-2 ring-red-200 rounded-md p-2" : ""
-                      }
-                    >
-                      {option.optionValues.map((value) => (
-                        <div
-                          key={value.id}
-                          className="flex items-center space-x-2"
+                      {option.type === "RADIO" ? (
+                        <RadioGroup.Root
+                          value={selectedOptions[option.id]?.[0] || ""}
+                          onValueChange={(value) =>
+                            handleOptionChange(option.id, value, false)
+                          }
+                          className={
+                            hasError ? "ring-2 ring-red-200 rounded-md p-2" : ""
+                          }
                         >
-                          <RadioGroup.Item
-                            value={value.id}
-                            className="w-4 h-4 rounded-full border border-input bg-background data-[state=checked]:border-primary"
-                          >
-                            <RadioGroup.Indicator className="flex items-center justify-center w-full h-full relative after:content-[''] after:w-2 after:h-2 after:rounded-full after:bg-primary" />
-                          </RadioGroup.Item>
-                          <label className="text-sm flex-1 flex justify-between cursor-pointer">
-                            <span>{value.name}</span>
-                            {value.priceModifier !== 0 && (
-                              <span
-                                className={
-                                  value.priceModifier > 0
-                                    ? "text-green-600"
-                                    : "text-red-600"
-                                }
+                          {option.optionValues.map((value) => (
+                            <div
+                              key={value.id}
+                              className="flex items-center space-x-2"
+                            >
+                              <RadioGroup.Item
+                                value={value.id}
+                                className="w-4 h-4 rounded-full border border-input bg-background data-[state=checked]:border-primary"
                               >
-                                {value.priceModifier > 0 ? "+" : ""}$
-                                {Math.abs(value.priceModifier).toFixed(2)}
-                              </span>
-                            )}
-                          </label>
-                        </div>
-                      ))}
-                    </RadioGroup.Root>
-                  ) : (
-                    <div
-                      className={`space-y-2 ${
-                        hasError ? "ring-2 ring-red-200 rounded-md p-2" : ""
-                      }`}
-                    >
-                      {option.optionValues.map((value) => (
+                                <RadioGroup.Indicator className="flex items-center justify-center w-full h-full relative after:content-[''] after:w-2 after:h-2 after:rounded-full after:bg-primary" />
+                              </RadioGroup.Item>
+                              <label className="text-sm flex-1 flex justify-between cursor-pointer">
+                                <span>{value.name}</span>
+                                {value.priceModifier !== 0 && (
+                                  <span
+                                    className={
+                                      value.priceModifier > 0
+                                        ? "text-green-600"
+                                        : "text-red-600"
+                                    }
+                                  >
+                                    {value.priceModifier > 0 ? "+" : ""}$
+                                    {Math.abs(value.priceModifier).toFixed(2)}
+                                  </span>
+                                )}
+                              </label>
+                            </div>
+                          ))}
+                        </RadioGroup.Root>
+                      ) : (
                         <div
-                          key={value.id}
-                          className="flex items-center space-x-2"
+                          className={`space-y-2 ${
+                            hasError ? "ring-2 ring-red-200 rounded-md p-2" : ""
+                          }`}
                         >
-                          <Checkbox.Root
-                            checked={
-                              selectedOptions[option.id]?.includes(value.id) ||
-                              false
-                            }
-                            onCheckedChange={() =>
-                              handleOptionChange(option.id, value.id, true)
-                            }
-                            className="w-4 h-4 rounded border border-input bg-background data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                          >
-                            <Checkbox.Indicator className="flex items-center justify-center text-primary-foreground">
-                              <svg
-                                width="12"
-                                height="12"
-                                viewBox="0 0 15 15"
-                                fill="none"
-                              >
-                                <path
-                                  d="m11.4669 3.72684c.5584.39049.6927 1.17476.2923 1.71693L7.35844 12.7169C6.90987 13.3223 6.00837 13.3023 5.58598 12.6869l-3.5-5.0684c-.55-1.1-.11-2.46.98-3.01.72-.36 1.59-.09 2.02.59L6.41542 8.13674l3.89866-6.2c.4123-.65601 1.2638-.83801 1.8468-.42801.30109.21102.51949.54766.58022.91107.04826.29009-.00448.59149-.11308.86814z"
-                                  fill="currentColor"
-                                  fillRule="evenodd"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            </Checkbox.Indicator>
-                          </Checkbox.Root>
-                          <label className="text-sm flex-1 flex justify-between cursor-pointer">
-                            <span>{value.name}</span>
-                            {value.priceModifier !== 0 && (
-                              <span
-                                className={
-                                  value.priceModifier > 0
-                                    ? "text-green-600"
-                                    : "text-red-600"
+                          {option.optionValues.map((value) => (
+                            <div
+                              key={value.id}
+                              className="flex items-center space-x-2"
+                            >
+                              <Checkbox.Root
+                                checked={
+                                  selectedOptions[option.id]?.includes(
+                                    value.id
+                                  ) || false
                                 }
+                                onCheckedChange={() =>
+                                  handleOptionChange(option.id, value.id, true)
+                                }
+                                className="w-4 h-4 rounded border border-input bg-background data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                               >
-                                {value.priceModifier > 0 ? "+" : ""}$
-                                {Math.abs(value.priceModifier).toFixed(2)}
-                              </span>
-                            )}
-                          </label>
+                                <Checkbox.Indicator className="flex items-center justify-center text-primary-foreground">
+                                  <svg
+                                    width="12"
+                                    height="12"
+                                    viewBox="0 0 15 15"
+                                    fill="none"
+                                  >
+                                    <path
+                                      d="m11.4669 3.72684c.5584.39049.6927 1.17476.2923 1.71693L7.35844 12.7169C6.90987 13.3223 6.00837 13.3023 5.58598 12.6869l-3.5-5.0684c-.55-1.1-.11-2.46.98-3.01.72-.36 1.59-.09 2.02.59L6.41542 8.13674l3.89866-6.2c.4123-.65601 1.2638-.83801 1.8468-.42801.30109.21102.51949.54766.58022.91107.04826.29009-.00448.59149-.11308.86814z"
+                                      fill="currentColor"
+                                      fillRule="evenodd"
+                                      clipRule="evenodd"
+                                    />
+                                  </svg>
+                                </Checkbox.Indicator>
+                              </Checkbox.Root>
+                              <label className="text-sm flex-1 flex justify-between cursor-pointer">
+                                <span>{value.name}</span>
+                                {value.priceModifier !== 0 && (
+                                  <span
+                                    className={
+                                      value.priceModifier > 0
+                                        ? "text-green-600"
+                                        : "text-red-600"
+                                    }
+                                  >
+                                    {value.priceModifier > 0 ? "+" : ""}$
+                                    {Math.abs(value.priceModifier).toFixed(2)}
+                                  </span>
+                                )}
+                              </label>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            </div>
 
             <div className="border-t pt-4 space-y-3">
               {/* Price breakdown display */}

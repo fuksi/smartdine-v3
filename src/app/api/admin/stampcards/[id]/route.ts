@@ -6,10 +6,10 @@ const prisma = new PrismaClient();
 // PUT /api/admin/stampcards/[id] - Update stampcard (edit first name)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { firstName } = body;
 
@@ -58,10 +58,10 @@ export async function PUT(
 // DELETE /api/admin/stampcards/[id] - Soft delete stampcard
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     await prisma.stampCard.update({
       where: { id },

@@ -4,13 +4,14 @@ import { prisma } from "@/lib/db";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireSuperAdminAuth(request);
+    const { id } = await params;
 
     const admin = await prisma.adminUser.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         location: {
           include: {
@@ -36,15 +37,16 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireSuperAdminAuth(request);
+    const { id } = await params;
 
     const { isActive, locationId, role } = await request.json();
 
     const admin = await prisma.adminUser.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(typeof isActive === "boolean" && { isActive }),
         ...(locationId && { locationId }),
@@ -71,13 +73,14 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireSuperAdminAuth(request);
+    const { id } = await params;
 
     await prisma.adminUser.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: "Admin deleted successfully" });

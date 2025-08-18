@@ -44,9 +44,11 @@ export async function POST(request: NextRequest) {
 // PUT /api/admin/stamps/[id]/claim - Claim stamps (mark multiple stamps as claimed)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { action: string } }
+  { params }: { params: Promise<{ action: string }> }
 ) {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _params = await params;
     const body = await request.json();
     const { stampCardId, claimCount } = body;
 

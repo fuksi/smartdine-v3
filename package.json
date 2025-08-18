@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "db:seed": "tsx prisma/seed.ts",
-    "test:order-flow": "node scripts/quick-test.js"
+    "test:order-flow": "node scripts/quick-test.js",
+    "test:emails": "node test-emails.js"
   },
   "dependencies": {
     "@prisma/client": "^6.14.0",
