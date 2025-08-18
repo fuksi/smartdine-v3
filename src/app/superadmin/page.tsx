@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { LogOut, Users, Store, CreditCard } from "lucide-react";
+import { LogOut, Users, Store, CreditCard, Edit, X, Check } from "lucide-react";
 
 interface SuperAdmin {
   email: string;
@@ -53,9 +53,14 @@ export default function SuperAdminPage() {
   const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [locations, setLocations] = useState<MerchantLocation[]>([]);
 
+  // Stripe Connect editing state
+  const [editingLocation, setEditingLocation] = useState<string | null>(null);
+  const [editingAccountId, setEditingAccountId] = useState("");
+  const [editingEnabled, setEditingEnabled] = useState(false);
+
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const checkAuth = async () => {
     try {
@@ -118,6 +123,7 @@ export default function SuperAdminPage() {
         setError(data.error || "Failed to send OTP");
       }
     } catch (error) {
+      console.error("Send OTP error:", error);
       setError("Network error");
     } finally {
       setLoginLoading(false);
@@ -145,6 +151,7 @@ export default function SuperAdminPage() {
         setError(data.error || "Failed to verify OTP");
       }
     } catch (error) {
+      console.error("Verify OTP error:", error);
       setError("Network error");
     } finally {
       setLoginLoading(false);
@@ -190,6 +197,43 @@ export default function SuperAdminPage() {
         alert(data.error || "Failed to set up Stripe Connect");
       }
     } catch (error) {
+      console.error("Setup Stripe Connect error:", error);
+      alert("Network error");
+    }
+  };
+
+  const startEditing = (location: MerchantLocation) => {
+    setEditingLocation(location.id);
+    setEditingAccountId(location.stripeConnectAccountId || "");
+    setEditingEnabled(location.stripeConnectEnabled);
+  };
+
+  const cancelEditing = () => {
+    setEditingLocation(null);
+    setEditingAccountId("");
+    setEditingEnabled(false);
+  };
+
+  const saveStripeConnect = async (locationId: string) => {
+    try {
+      const response = await fetch(`/api/superadmin/stripe/${locationId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          stripeConnectAccountId: editingAccountId.trim() || null,
+          stripeConnectEnabled: editingEnabled,
+        }),
+      });
+
+      if (response.ok) {
+        await loadData(); // Refresh data
+        cancelEditing();
+      } else {
+        const data = await response.json();
+        alert(data.error || "Failed to update Stripe Connect");
+      }
+    } catch (error) {
+      console.error("Save Stripe Connect error:", error);
       alert("Network error");
     }
   };
@@ -382,15 +426,48 @@ export default function SuperAdminPage() {
                     key={location.id}
                     className="flex items-center justify-between p-4 border rounded-lg"
                   >
-                    <div>
+                    <div className="flex-1">
                       <div className="font-medium">
                         {location.merchant.name} - {location.name}
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        Account ID:{" "}
-                        {location.stripeConnectAccountId || "Not set up"}
-                      </div>
+                      
+                      {editingLocation === location.id ? (
+                        <div className="mt-2 space-y-2">
+                          <div>
+                            <label className="text-sm font-medium text-gray-700">
+                              Account ID:
+                            </label>
+                            <Input
+                              value={editingAccountId}
+                              onChange={(e) => setEditingAccountId(e.target.value)}
+                              placeholder="acct_xxxxxxxxxx"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id={`enabled-${location.id}`}
+                              checked={editingEnabled}
+                              onChange={(e) => setEditingEnabled(e.target.checked)}
+                              className="rounded"
+                            />
+                            <label
+                              htmlFor={`enabled-${location.id}`}
+                              className="text-sm font-medium text-gray-700"
+                            >
+                              Enable Stripe Connect
+                            </label>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground">
+                          Account ID:{" "}
+                          {location.stripeConnectAccountId || "Not set up"}
+                        </div>
+                      )}
                     </div>
+                    
                     <div className="flex items-center gap-2">
                       <span
                         className={`px-2 py-1 rounded-full text-xs ${
@@ -403,18 +480,50 @@ export default function SuperAdminPage() {
                           ? "Connected"
                           : "Not Connected"}
                       </span>
-                      {!location.stripeConnectAccountId && (
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            setupStripeConnect(
-                              location.id,
-                              `${location.merchant.name} - ${location.name}`
-                            )
-                          }
-                        >
-                          Set up Stripe
-                        </Button>
+                      
+                      {editingLocation === location.id ? (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => saveStripeConnect(location.id)}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={cancelEditing}
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => startEditing(location)}
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            Edit
+                          </Button>
+                          {!location.stripeConnectAccountId && (
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                setupStripeConnect(
+                                  location.id,
+                                  `${location.merchant.name} - ${location.name}`
+                                )
+                              }
+                            >
+                              Auto Setup
+                            </Button>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
