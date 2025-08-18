@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Minus, Plus, Trash2, ArrowLeft } from "lucide-react";
 import { useCartStore } from "@/lib/store/cart";
 
@@ -39,11 +40,21 @@ export default function CartPage() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPhoneValid, setIsPhoneValid] = useState(
+    // Initialize as valid if there's already a phone number (development)
+    formData.phone.trim().length > 0
+  );
 
   // Email validation helper function
   const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email.trim());
+  };
+
+  // Phone change handler
+  const handlePhoneChange = (phoneNumber: string, isValid: boolean) => {
+    setFormData((prev) => ({ ...prev, phone: phoneNumber }));
+    setIsPhoneValid(isValid);
   };
 
   const handleSubmitOrder = async () => {
@@ -58,6 +69,11 @@ export default function CartPage() {
 
     if (!isValidEmail(formData.email)) {
       alert("Please enter a valid email address");
+      return;
+    }
+
+    if (!isPhoneValid) {
+      alert("Please enter a valid phone number");
       return;
     }
 
@@ -307,18 +323,17 @@ export default function CartPage() {
                   <label className="block text-sm font-medium mb-1">
                     Phone *
                   </label>
-                  <Input
-                    type="tel"
+                  <PhoneInput
                     value={formData.phone}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        phone: e.target.value,
-                      }))
-                    }
-                    placeholder="Your phone number"
-                    required
+                    onChange={handlePhoneChange}
+                    defaultCountry="FI"
+                    placeholder="Phone number"
+                    className="w-full"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Enter your Finnish number without the leading 0 (e.g., 401234567 instead of 0401234567). 
+                    If you include the 0, it will be automatically converted.
+                  </p>
                 </div>
 
                 <div>
@@ -345,10 +360,12 @@ export default function CartPage() {
                   onClick={handleSubmitOrder}
                   disabled={
                     isSubmitting ||
+                    getTotalItems() === 0 ||
                     !formData.name.trim() ||
                     !formData.phone.trim() ||
                     !formData.email.trim() ||
-                    !isValidEmail(formData.email)
+                    !isValidEmail(formData.email) ||
+                    !isPhoneValid
                   }
                 >
                   {isSubmitting
