@@ -37,6 +37,18 @@ export default function AdminPage() {
           </Card>
         </Link>
 
+        <Link href="/admin/options">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle>Option Management</CardTitle>
+              <CardDescription>
+                Create and manage product options that can be assigned to menu
+                items
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+
         <Link href="/admin/settings">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardHeader>

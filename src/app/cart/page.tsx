@@ -31,9 +31,24 @@ export default function CartPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Email validation helper function
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email.trim());
+  };
+
   const handleSubmitOrder = async () => {
-    if (!formData.name.trim() || !formData.phone.trim()) {
-      alert("Please fill in your name and phone number");
+    if (
+      !formData.name.trim() ||
+      !formData.phone.trim() ||
+      !formData.email.trim()
+    ) {
+      alert("Please fill in your name, phone number, and email address");
+      return;
+    }
+
+    if (!isValidEmail(formData.email)) {
+      alert("Please enter a valid email address");
       return;
     }
 
@@ -88,12 +103,9 @@ export default function CartPage() {
 
       const result = await response.json();
 
-      alert(
-        `Order submitted successfully! Order #${result.order.id.slice(
-          -8
-        )} - You will receive a confirmation shortly.`
-      );
+      // Redirect to order tracking page
       clearCart();
+      window.location.href = `/your-order?id=${result.order.id}`;
     } catch (error) {
       console.error("Error submitting order:", error);
       alert("Failed to submit order. Please try again.");
@@ -277,7 +289,7 @@ export default function CartPage() {
 
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Email (Optional)
+                    Email *
                   </label>
                   <Input
                     type="email"
@@ -289,16 +301,20 @@ export default function CartPage() {
                       }))
                     }
                     placeholder="your@email.com"
+                    required
                   />
                 </div>
 
                 <Button
+                  variant="brand"
                   className="w-full"
                   onClick={handleSubmitOrder}
                   disabled={
                     isSubmitting ||
                     !formData.name.trim() ||
-                    !formData.phone.trim()
+                    !formData.phone.trim() ||
+                    !formData.email.trim() ||
+                    !isValidEmail(formData.email)
                   }
                 >
                   {isSubmitting

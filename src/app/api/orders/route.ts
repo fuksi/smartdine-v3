@@ -35,7 +35,8 @@ export async function POST(request: NextRequest) {
         customerPhone,
         customerEmail: customerEmail || null,
         totalAmount: parseFloat(totalAmount),
-        status: "PENDING",
+        status: "PLACED",
+        fulfilmentType: "PICKUP",
         items: {
           create: items.map((item: any) => ({
             productId: item.productId,

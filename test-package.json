@@ -1,0 +1,11 @@
+{
+  "name": "menu-ui-tests",
+  "type": "module",
+  "scripts": {
+    "test-menu-ui": "node test-menu-ui.js",
+    "test-menu-api": "./test-menu-management.sh"
+  },
+  "devDependencies": {
+    "puppeteer": "^23.10.4"
+  }
+}

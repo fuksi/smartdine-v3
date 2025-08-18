@@ -193,7 +193,7 @@ export default function AdminOrdersPage() {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm min-w-40"
+              className="border border-gray-300 rounded-md px-3 py-2 text-sm"
             >
               <option value="all">All Statuses</option>
               {Object.entries(statusConfig).map(([status, config]) => (
@@ -241,7 +241,7 @@ export default function AdminOrdersPage() {
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {formatTime(order.createdAt)} • $
-                        {Number(order.totalAmount).toFixed(2)}
+                        {order.totalAmount.toFixed(2)}
                       </div>
                     </div>
                     <div className="flex gap-2 flex-wrap">
@@ -311,7 +311,7 @@ export default function AdminOrdersPage() {
                               <span>
                                 {item.quantity}× {item.product.name}
                               </span>
-                              <span>${Number(item.totalPrice).toFixed(2)}</span>
+                              <span>${item.totalPrice.toFixed(2)}</span>
                             </div>
                             {item.options.length > 0 && (
                               <div className="text-xs text-muted-foreground mt-1">
@@ -319,14 +319,13 @@ export default function AdminOrdersPage() {
                                   <div key={idx}>
                                     {option.option.name}:{" "}
                                     {option.optionValue.name}
-                                    {Number(option.optionValue.priceModifier) >
-                                      0 && (
+                                    {option.optionValue.priceModifier > 0 && (
                                       <span>
                                         {" "}
                                         (+$
-                                        {Number(
-                                          option.optionValue.priceModifier
-                                        ).toFixed(2)}
+                                        {option.optionValue.priceModifier.toFixed(
+                                          2
+                                        )}
                                         )
                                       </span>
                                     )}

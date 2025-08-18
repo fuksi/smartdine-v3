@@ -95,7 +95,7 @@ model Product {
 
 model ProductOption {
   id            String                    @id @default(uuid())
-  productId     String
+  productId     String?
   name          String
   description   String?
   type          ProductOptionType
@@ -104,7 +104,7 @@ model ProductOption {
   createdAt     DateTime                  @default(now())
   updatedAt     DateTime                  @updatedAt
   
-  product       Product                   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product       Product?                  @relation(fields: [productId], references: [id], onDelete: Cascade)
   optionValues  ProductOptionValue[]
   orderItemOptions OrderItemOption[]
   
@@ -134,7 +134,9 @@ model Order {
   customerPhone String
   customerEmail String?
   totalAmount Decimal
-  status      OrderStatus       @default(PENDING)
+  status      OrderStatus       @default(PLACED)
+  fulfilmentType String         @default("PICKUP") // PICKUP or DELIVERY
+  estimatedPickupTime DateTime?
   pickupTime  DateTime?
   notes       String?
   createdAt   DateTime          @default(now())
@@ -184,12 +186,12 @@ enum ProductOptionType {
 }
 
 enum OrderStatus {
-  PENDING
-  CONFIRMED
-  PREPARING
-  READY
-  COMPLETED
-  CANCELLED
+  PLACED
+  ACCEPTED
+  REJECTED
+  PROCESSING
+  READY_FOR_PICKUP
+  FULFILLED
   
   @@map("order_status")
 }
