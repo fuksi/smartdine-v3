@@ -33,7 +33,7 @@ export default function CheckoutButton({
         },
         body: JSON.stringify({
           orderId,
-          successUrl: `${window.location.origin}/order-success?order_id=${orderId}`,
+          successUrl: `${window.location.origin}/your-order?id=${orderId}`,
           cancelUrl: `${window.location.origin}/cart`,
         }),
       });

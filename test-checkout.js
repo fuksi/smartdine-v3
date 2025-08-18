@@ -1,6 +1,4 @@
-#!/uconst testCheckout = async () => {
-  try {
-    const response = await fetch('http://localhost:3000/api/stripe/checkout', {bin/env node
+#!/usr/bin/env node
 
 console.log("Testing checkout API...");
 
@@ -14,7 +12,7 @@ const testCheckout = async () => {
       body: JSON.stringify({
         orderId: "test-order-123",
         successUrl:
-          "http://localhost:3002/order-success?order_id=test-order-123",
+          "http://localhost:3002/your-order?id=test-order-123",
         cancelUrl: "http://localhost:3002/cart",
       }),
     });

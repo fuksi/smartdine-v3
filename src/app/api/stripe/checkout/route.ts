@@ -223,7 +223,7 @@ export async function POST(request: NextRequest) {
     console.log(
       `   Success URL: ${
         successUrl ||
-        `${process.env.NEXT_PUBLIC_APP_URL}/order-success?order_id=${orderId}`
+        `${process.env.NEXT_PUBLIC_APP_URL}/your-order?id=${orderId}`
       }`
     );
     console.log(
@@ -240,7 +240,7 @@ export async function POST(request: NextRequest) {
         customerEmail: order.customerEmail || undefined,
         successUrl:
           successUrl ||
-          `${process.env.NEXT_PUBLIC_APP_URL}/order-success?order_id=${orderId}`,
+          `${process.env.NEXT_PUBLIC_APP_URL}/your-order?id=${orderId}`,
         cancelUrl: cancelUrl || `${process.env.NEXT_PUBLIC_APP_URL}/cart`,
       });
 

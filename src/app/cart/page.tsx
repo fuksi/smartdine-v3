@@ -120,7 +120,7 @@ export default function CartPage() {
         },
         body: JSON.stringify({
           orderId: result.order.id,
-          successUrl: `${window.location.origin}/order-success?order_id=${result.order.id}`,
+          successUrl: `${window.location.origin}/your-order?id=${result.order.id}`,
           cancelUrl: `${window.location.origin}/cart`,
         }),
       });
