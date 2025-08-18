@@ -64,14 +64,20 @@ async function main() {
         email: "jatkasaari@uuno.fi",
         isActive: true,
         // Stripe Connect configuration for development
-        stripeConnectAccountId: process.env.DEV_MERCHANT_STRIPE_ACCOUNT_ID || null,
+        stripeConnectAccountId:
+          process.env.DEV_MERCHANT_STRIPE_ACCOUNT_ID || null,
         stripeConnectEnabled: !!process.env.DEV_MERCHANT_STRIPE_ACCOUNT_ID,
-        stripeConnectSetupAt: process.env.DEV_MERCHANT_STRIPE_ACCOUNT_ID ? new Date() : null,
+        stripeConnectSetupAt: process.env.DEV_MERCHANT_STRIPE_ACCOUNT_ID
+          ? new Date()
+          : null,
       },
     });
     console.log("✓ Created location:", location.name);
     if (process.env.DEV_MERCHANT_STRIPE_ACCOUNT_ID) {
-      console.log("✓ Stripe Connect enabled for location with account:", process.env.DEV_MERCHANT_STRIPE_ACCOUNT_ID);
+      console.log(
+        "✓ Stripe Connect enabled for location with account:",
+        process.env.DEV_MERCHANT_STRIPE_ACCOUNT_ID
+      );
     }
   } else {
     console.log("✓ Location already exists:", location.name);

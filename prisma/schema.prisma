@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,59 +8,55 @@ datasource db {
 }
 
 model Merchant {
-  id          String            @id @default(uuid())
+  id          String             @id @default(uuid())
   name        String
-  slug        String            @unique
+  slug        String             @unique
   description String?
   logoUrl     String?
-  isActive    Boolean           @default(true)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  locations   MerchantLocation[]
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
   adminUsers  AdminUser[]
-  
+  locations   MerchantLocation[]
+
   @@map("merchants")
 }
 
 model MerchantLocation {
-  id          String    @id @default(uuid())
-  merchantId  String
-  name        String
-  slug        String    
-  address     String
-  phone       String?
-  email       String?
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  // Stripe Connect fields
+  id                     String        @id @default(uuid())
+  merchantId             String
+  name                   String
+  slug                   String
+  address                String
+  phone                  String?
+  email                  String?
+  isActive               Boolean       @default(true)
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
   stripeConnectAccountId String?
-  stripeConnectEnabled   Boolean @default(false)
+  stripeConnectEnabled   Boolean       @default(false)
   stripeConnectSetupAt   DateTime?
-  
-  merchant     Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  menu         Menu?
-  orders       Order[]
-  stampCards   StampCard[]
-  openingHours OpeningHour[]
-  adminUsers   AdminUser[]
-  
+  adminUsers             AdminUser[]
+  menu                   Menu?
+  merchant               Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  openingHours           OpeningHour[]
+  orders                 Order[]
+  stampCards             StampCard[]
+
   @@unique([merchantId, slug])
   @@map("merchant_locations")
 }
 
 model Menu {
-  id         String            @id @default(uuid())
-  locationId String            @unique
-  name       String            @default("Menu")
-  isActive   Boolean           @default(true)
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
-  
-  location   MerchantLocation  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  id         String           @id @default(uuid())
+  locationId String           @unique
+  name       String           @default("Menu")
+  isActive   Boolean          @default(true)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
   categories Category[]
-  
+  location   MerchantLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
   @@map("menus")
 }
 
@@ -76,10 +69,9 @@ model Category {
   isActive    Boolean   @default(true)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
   menu        Menu      @relation(fields: [menuId], references: [id], onDelete: Cascade)
   products    Product[]
-  
+
   @@map("categories")
 }
 
@@ -94,119 +86,217 @@ model Product {
   sortOrder   Int             @default(0)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
-  
-  category    Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  options     ProductOption[]
   orderItems  OrderItem[]
-  
+  options     ProductOption[]
+  category    Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
   @@map("products")
 }
 
 model ProductOption {
-  id            String                    @id @default(uuid())
-  productId     String?
-  name          String
-  description   String?
-  type          ProductOptionType
-  isRequired    Boolean                   @default(false)
-  sortOrder     Int                       @default(0)
-  createdAt     DateTime                  @default(now())
-  updatedAt     DateTime                  @updatedAt
-  
-  product       Product?                  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  optionValues  ProductOptionValue[]
+  id               String               @id @default(uuid())
+  productId        String?
+  name             String
+  description      String?
+  type             ProductOptionType
+  isRequired       Boolean              @default(false)
+  sortOrder        Int                  @default(0)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
   orderItemOptions OrderItemOption[]
-  
+  optionValues     ProductOptionValue[]
+  product          Product?             @relation(fields: [productId], references: [id], onDelete: Cascade)
+
   @@map("product_options")
 }
 
 model ProductOptionValue {
-  id              String                    @id @default(uuid())
-  optionId        String
-  name            String
-  priceModifier   Decimal                   @default(0)
-  isDefault       Boolean                   @default(false)
-  sortOrder       Int                       @default(0)
-  createdAt       DateTime                  @default(now())
-  updatedAt       DateTime                  @updatedAt
-  
-  option          ProductOption             @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  id               String            @id @default(uuid())
+  optionId         String
+  name             String
+  priceModifier    Decimal           @default(0)
+  isDefault        Boolean           @default(false)
+  sortOrder        Int               @default(0)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
   orderItemOptions OrderItemOption[]
-  
+  option           ProductOption     @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
   @@map("product_option_values")
 }
 
 model Order {
-  id          String            @id @default(uuid())
-  displayId   Int               @unique // 4-digit friendly display ID for UI
-  locationId  String
-  customerName String
-  customerPhone String
-  customerEmail String?
-  totalAmount Decimal
-  status      OrderStatus       @default(PLACED)
-  fulfilmentType String         @default("PICKUP") // PICKUP or DELIVERY
-  estimatedPickupTime DateTime?
-  pickupTime  DateTime?
-  notes       String?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  
-  // Payment related fields
-  stripePaymentIntentId String?
+  id                      String           @id @default(uuid())
+  displayId               Int              @unique
+  locationId              String
+  customerName            String
+  customerPhone           String
+  customerEmail           String?
+  totalAmount             Decimal
+  status                  OrderStatus      @default(PLACED)
+  fulfilmentType          String           @default("PICKUP")
+  estimatedPickupTime     DateTime?
+  pickupTime              DateTime?
+  notes                   String?
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+  stripePaymentIntentId   String?
   stripeCheckoutSessionId String?
-  paymentStatus PaymentStatus   @default(PENDING)
-  paymentAmount Decimal?        // Amount authorized (can be different from totalAmount due to tips)
-  paymentCapturedAmount Decimal? // Amount actually captured
-  paymentCapturedAt DateTime?
-  
-  location    MerchantLocation  @relation(fields: [locationId], references: [id])
-  items       OrderItem[]
-  
+  paymentStatus           PaymentStatus    @default(PENDING)
+  paymentAmount           Decimal?
+  paymentCapturedAmount   Decimal?
+  paymentCapturedAt       DateTime?
+  items                   OrderItem[]
+  location                MerchantLocation @relation(fields: [locationId], references: [id])
+
   @@map("orders")
 }
 
 model OrderItem {
-  id          String                @id @default(uuid())
-  orderId     String
-  productId   String
-  quantity    Int
-  unitPrice   Decimal
-  totalPrice  Decimal
-  createdAt   DateTime              @default(now())
-  
-  order       Order                 @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product     Product               @relation(fields: [productId], references: [id])
-  options     OrderItemOption[]
-  
+  id         String            @id @default(uuid())
+  orderId    String
+  productId  String
+  quantity   Int
+  unitPrice  Decimal
+  totalPrice Decimal
+  createdAt  DateTime          @default(now())
+  options    OrderItemOption[]
+  order      Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product    Product           @relation(fields: [productId], references: [id])
+
   @@map("order_items")
 }
 
 model OrderItemOption {
-  id            String                @id @default(uuid())
+  id            String             @id @default(uuid())
   orderItemId   String
   optionId      String
   optionValueId String
-  createdAt     DateTime              @default(now())
-  
-  orderItem     OrderItem             @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
-  option        ProductOption         @relation(fields: [optionId], references: [id])
-  optionValue   ProductOptionValue    @relation(fields: [optionValueId], references: [id])
-  
+  createdAt     DateTime           @default(now())
+  option        ProductOption      @relation(fields: [optionId], references: [id])
+  optionValue   ProductOptionValue @relation(fields: [optionValueId], references: [id])
+  orderItem     OrderItem          @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
   @@map("order_item_options")
+}
+
+model AdminUser {
+  id         String            @id @default(uuid())
+  email      String            @unique
+  locationId String?
+  merchantId String?
+  role       AdminRole         @default(LOCATION_ADMIN)
+  isActive   Boolean           @default(true)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  sessions   AdminSession[]
+  location   MerchantLocation? @relation(fields: [locationId], references: [id])
+  merchant   Merchant?         @relation(fields: [merchantId], references: [id])
+
+  @@map("admin_users")
+}
+
+model AdminSession {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("admin_sessions")
+}
+
+model OpeningHour {
+  id         String           @id @default(uuid())
+  locationId String
+  dayOfWeek  Int
+  isOpen     Boolean          @default(true)
+  openTime   String?
+  closeTime  String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  location   MerchantLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([locationId, dayOfWeek])
+  @@map("opening_hours")
+}
+
+model StampCard {
+  id             String           @id @default(uuid())
+  locationId     String
+  phoneNumber    String
+  firstName      String
+  stampsRequired Int              @default(10)
+  isDeleted      Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  location       MerchantLocation @relation(fields: [locationId], references: [id])
+  stamps         Stamp[]
+
+  @@unique([locationId, phoneNumber])
+  @@map("stamp_cards")
+}
+
+model Stamp {
+  id          String    @id @default(uuid())
+  stampCardId String
+  isClaimed   Boolean   @default(false)
+  claimedAt   DateTime?
+  isDeleted   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  stampCard   StampCard @relation(fields: [stampCardId], references: [id], onDelete: Cascade)
+
+  @@map("stamps")
+}
+
+model SuperAdmin {
+  id        String              @id @default(uuid())
+  email     String              @unique
+  isActive  Boolean             @default(true)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  otpCodes  SuperAdminOTP[]
+  sessions  SuperAdminSession[]
+
+  @@map("super_admins")
+}
+
+model SuperAdminSession {
+  id        String     @id @default(uuid())
+  adminId   String
+  token     String     @unique
+  expiresAt DateTime
+  createdAt DateTime   @default(now())
+  admin     SuperAdmin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@map("super_admin_sessions")
+}
+
+model SuperAdminOTP {
+  id        String     @id @default(uuid())
+  adminId   String
+  code      String
+  expiresAt DateTime
+  isUsed    Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  admin     SuperAdmin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@map("super_admin_otps")
 }
 
 enum ProductOptionType {
   RADIO
   MULTISELECT
-  
+
   @@map("product_option_type")
 }
 
 enum AdminRole {
-  LOCATION_ADMIN    // Can manage single location
-  MERCHANT_ADMIN    // Can manage all locations of a merchant
-  
+  LOCATION_ADMIN
+  MERCHANT_ADMIN
+
   @@map("admin_role")
 }
 
@@ -217,131 +307,17 @@ enum OrderStatus {
   PROCESSING
   READY_FOR_PICKUP
   FULFILLED
-  
+
   @@map("order_status")
 }
 
 enum PaymentStatus {
-  PENDING     // Payment not yet attempted
-  AUTHORIZED  // Payment authorized but not captured
-  CAPTURED    // Payment captured
-  FAILED      // Payment failed
-  CANCELED    // Payment canceled
-  REFUNDED    // Payment refunded
-  
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  CANCELED
+  REFUNDED
+
   @@map("payment_status")
-}
-
-model AdminUser {
-  id          String            @id @default(uuid())
-  email       String            @unique
-  locationId  String?           // Make optional for multi-location admins
-  merchantId  String?           // Add direct merchant relationship
-  role        AdminRole         @default(LOCATION_ADMIN)
-  isActive    Boolean           @default(true)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  
-  location    MerchantLocation? @relation(fields: [locationId], references: [id])
-  merchant    Merchant?         @relation(fields: [merchantId], references: [id])
-  sessions    AdminSession[]
-  
-  @@map("admin_users")
-}
-
-model AdminSession {
-  id          String      @id @default(uuid())
-  userId      String
-  token       String      @unique
-  expiresAt   DateTime
-  createdAt   DateTime    @default(now())
-  
-  user        AdminUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  @@map("admin_sessions")
-}
-
-model OpeningHour {
-  id          String            @id @default(uuid())
-  locationId  String
-  dayOfWeek   Int               // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-  isOpen      Boolean           @default(true)
-  openTime    String?           // Format: "HH:MM" (e.g., "09:00")
-  closeTime   String?           // Format: "HH:MM" (e.g., "21:00")
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  
-  location    MerchantLocation  @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  
-  @@unique([locationId, dayOfWeek])
-  @@map("opening_hours")
-}
-
-model StampCard {
-  id              String            @id @default(uuid())
-  locationId      String
-  phoneNumber     String            // International format (e.g., +358401234567)
-  firstName       String
-  stampsRequired  Int               @default(10) // Configurable stamps needed for reward
-  isDeleted       Boolean           @default(false) // Soft delete
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  
-  location        MerchantLocation  @relation(fields: [locationId], references: [id])
-  stamps          Stamp[]
-  
-  @@unique([locationId, phoneNumber]) // Unique per restaurant
-  @@map("stamp_cards")
-}
-
-model Stamp {
-  id          String      @id @default(uuid())
-  stampCardId String
-  isClaimed   Boolean     @default(false)
-  claimedAt   DateTime?
-  isDeleted   Boolean     @default(false) // Soft delete
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  
-  stampCard   StampCard   @relation(fields: [stampCardId], references: [id], onDelete: Cascade)
-  
-  @@map("stamps")
-}
-
-model SuperAdmin {
-  id          String            @id @default(uuid())
-  email       String            @unique
-  isActive    Boolean           @default(true)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  
-  sessions    SuperAdminSession[]
-  otpCodes    SuperAdminOTP[]
-  
-  @@map("super_admins")
-}
-
-model SuperAdminSession {
-  id          String      @id @default(uuid())
-  adminId     String
-  token       String      @unique
-  expiresAt   DateTime
-  createdAt   DateTime    @default(now())
-  
-  admin       SuperAdmin  @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  
-  @@map("super_admin_sessions")
-}
-
-model SuperAdminOTP {
-  id          String      @id @default(uuid())
-  adminId     String
-  code        String      // 6-digit OTP code
-  expiresAt   DateTime    // Valid for 10 minutes
-  isUsed      Boolean     @default(false)
-  createdAt   DateTime    @default(now())
-  
-  admin       SuperAdmin  @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  
-  @@map("super_admin_otps")
 }
