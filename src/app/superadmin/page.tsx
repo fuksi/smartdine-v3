@@ -430,7 +430,7 @@ export default function SuperAdminPage() {
                       <div className="font-medium">
                         {location.merchant.name} - {location.name}
                       </div>
-                      
+
                       {editingLocation === location.id ? (
                         <div className="mt-2 space-y-2">
                           <div>
@@ -439,7 +439,9 @@ export default function SuperAdminPage() {
                             </label>
                             <Input
                               value={editingAccountId}
-                              onChange={(e) => setEditingAccountId(e.target.value)}
+                              onChange={(e) =>
+                                setEditingAccountId(e.target.value)
+                              }
                               placeholder="acct_xxxxxxxxxx"
                               className="mt-1"
                             />
@@ -449,7 +451,9 @@ export default function SuperAdminPage() {
                               type="checkbox"
                               id={`enabled-${location.id}`}
                               checked={editingEnabled}
-                              onChange={(e) => setEditingEnabled(e.target.checked)}
+                              onChange={(e) =>
+                                setEditingEnabled(e.target.checked)
+                              }
                               className="rounded"
                             />
                             <label
@@ -467,7 +471,7 @@ export default function SuperAdminPage() {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                       <span
                         className={`px-2 py-1 rounded-full text-xs ${
@@ -480,7 +484,7 @@ export default function SuperAdminPage() {
                           ? "Connected"
                           : "Not Connected"}
                       </span>
-                      
+
                       {editingLocation === location.id ? (
                         <div className="flex gap-2">
                           <Button

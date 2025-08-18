@@ -64,14 +64,18 @@ const testSuperAdminStripeUpdate = async () => {
 
     if (locationsData.locations.length > 0) {
       const location = locationsData.locations[0];
-      console.log(`Testing with location: ${location.merchant.name} - ${location.name}`);
-      console.log(`Current account ID: ${location.stripeConnectAccountId || 'None'}`);
+      console.log(
+        `Testing with location: ${location.merchant.name} - ${location.name}`
+      );
+      console.log(
+        `Current account ID: ${location.stripeConnectAccountId || "None"}`
+      );
       console.log(`Current enabled status: ${location.stripeConnectEnabled}`);
 
       // Step 4: Test updating Stripe Connect
       console.log("4. Testing Stripe Connect update...");
       const testAccountId = "acct_test123456789";
-      
+
       const updateResponse = await fetch(
         `http://localhost:3001/api/superadmin/stripe/${location.id}`,
         {
@@ -90,8 +94,12 @@ const testSuperAdminStripeUpdate = async () => {
       if (updateResponse.ok) {
         const updatedLocation = await updateResponse.json();
         console.log("✅ Successfully updated!");
-        console.log(`New account ID: ${updatedLocation.stripeConnectAccountId}`);
-        console.log(`New enabled status: ${updatedLocation.stripeConnectEnabled}`);
+        console.log(
+          `New account ID: ${updatedLocation.stripeConnectAccountId}`
+        );
+        console.log(
+          `New enabled status: ${updatedLocation.stripeConnectEnabled}`
+        );
       } else {
         const errorData = await updateResponse.json();
         console.error("❌ Update failed:", errorData.error);
