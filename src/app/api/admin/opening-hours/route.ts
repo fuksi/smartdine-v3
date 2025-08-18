@@ -64,7 +64,7 @@ export async function PUT(request: NextRequest) {
     const updatedHours = [];
     for (const hour of openingHours) {
       const { dayOfWeek, isOpen, openTime, closeTime } = hour;
-      
+
       const updatedHour = await prisma.openingHour.upsert({
         where: {
           locationId_dayOfWeek: {
@@ -85,7 +85,7 @@ export async function PUT(request: NextRequest) {
           closeTime: isOpen ? closeTime : null,
         },
       });
-      
+
       updatedHours.push(updatedHour);
     }
 

@@ -9,6 +9,7 @@ import {
   Order,
   OrderItem,
   OrderItemOption,
+  PaymentStatus,
 } from "@prisma/client";
 
 export type MerchantWithLocations = Merchant & {

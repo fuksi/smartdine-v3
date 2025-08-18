@@ -5,49 +5,106 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Starting seed...");
 
-  // Create merchant
-  const merchant = await prisma.merchant.create({
-    data: {
-      name: "Uuno Pizza",
-      slug: "uuno",
-      description: "Authentic Finnish pizza and grill",
-      logoUrl: null,
-      isActive: true,
+  // Create superadmin user
+  const superAdminEmail = "phuc.trandt@outlook.com";
+  let superAdmin = await prisma.superAdmin.findUnique({
+    where: { email: superAdminEmail },
+  });
+
+  if (!superAdmin) {
+    superAdmin = await prisma.superAdmin.create({
+      data: {
+        email: superAdminEmail,
+        isActive: true,
+      },
+    });
+    console.log("Created superadmin:", superAdmin.email);
+  } else {
+    console.log("Superadmin already exists:", superAdmin.email);
+  }
+
+  // Create or find merchant
+  let merchant = await prisma.merchant.findUnique({
+    where: { slug: "uuno" },
+  });
+
+  if (!merchant) {
+    merchant = await prisma.merchant.create({
+      data: {
+        name: "Uuno Pizza",
+        slug: "uuno",
+        description: "Authentic Finnish pizza and grill",
+        logoUrl: null,
+        isActive: true,
+      },
+    });
+  }
+
+  // Create or find location
+  let location = await prisma.merchantLocation.findUnique({
+    where: {
+      merchantId_slug: {
+        merchantId: merchant.id,
+        slug: "jatkasaari",
+      },
     },
   });
 
-  // Create location
-  const location = await prisma.merchantLocation.create({
-    data: {
-      merchantId: merchant.id,
-      name: "Uuno Jätkäsaari",
-      slug: "jatkasaari",
-      address: "Jätkäsaari, Helsinki, Finland",
-      phone: "+358 123 456 789",
-      email: "jatkasaari@uuno.fi",
-      isActive: true,
-    },
-  });
+  if (!location) {
+    location = await prisma.merchantLocation.create({
+      data: {
+        merchantId: merchant.id,
+        name: "Uuno Jätkäsaari",
+        slug: "jatkasaari",
+        address: "Jätkäsaari, Helsinki, Finland",
+        phone: "+358 123 456 789",
+        email: "jatkasaari@uuno.fi",
+        isActive: true,
+      },
+    });
+  }
 
   // Create opening hours
   const openingHoursData = [
-    { day: 0, isOpen: true, open: "12:00", close: "19:00" },   // Sunday
-    { day: 1, isOpen: true, open: "12:00", close: "18:00" },   // Monday
-    { day: 2, isOpen: true, open: "10:00", close: "19:00" },   // Tuesday
-    { day: 3, isOpen: true, open: "10:00", close: "19:00" },   // Wednesday
-    { day: 4, isOpen: true, open: "10:00", close: "19:00" },   // Thursday
-    { day: 5, isOpen: true, open: "10:00", close: "19:00" },   // Friday
-    { day: 6, isOpen: true, open: "00:00", close: "19:00" },   // Saturday
+    { day: 0, isOpen: true, open: "12:00", close: "19:00" }, // Sunday
+    { day: 1, isOpen: true, open: "12:00", close: "18:00" }, // Monday
+    { day: 2, isOpen: true, open: "10:00", close: "19:00" }, // Tuesday
+    { day: 3, isOpen: true, open: "10:00", close: "19:00" }, // Wednesday
+    { day: 4, isOpen: true, open: "10:00", close: "19:00" }, // Thursday
+    { day: 5, isOpen: true, open: "10:00", close: "19:00" }, // Friday
+    { day: 6, isOpen: true, open: "00:00", close: "19:00" }, // Saturday
   ];
 
-  for (const { day, isOpen, open, close } of openingHoursData) {
-    await prisma.openingHour.create({
+  // Create opening hours if they don't exist
+  const existingHours = await prisma.openingHour.findFirst({
+    where: { locationId: location.id },
+  });
+
+  if (!existingHours) {
+    for (const { day, isOpen, open, close } of openingHoursData) {
+      await prisma.openingHour.create({
+        data: {
+          locationId: location.id,
+          dayOfWeek: day,
+          isOpen,
+          openTime: open,
+          closeTime: close,
+        },
+      });
+    }
+  }
+
+  // Create admin user for testing if doesn't exist
+  const existingAdmin = await prisma.adminUser.findUnique({
+    where: { email: "test@outlook.com" },
+  });
+
+  if (!existingAdmin) {
+    await prisma.adminUser.create({
       data: {
+        email: "test@outlook.com",
         locationId: location.id,
-        dayOfWeek: day,
-        isOpen,
-        openTime: open,
-        closeTime: close,
+        isActive: true,
       },
     });
   }

@@ -24,9 +24,18 @@ export default function CartPage() {
   } = useCartStore();
 
   const [formData, setFormData] = useState({
-    name: customerInfo?.name || "",
-    phone: customerInfo?.phone || "",
-    email: customerInfo?.email || "",
+    name:
+      customerInfo?.name || process.env.NODE_ENV === "development"
+        ? process.env.NEXT_PUBLIC_DEV_CHECKOUT_NAME || ""
+        : "",
+    phone:
+      customerInfo?.phone || process.env.NODE_ENV === "development"
+        ? process.env.NEXT_PUBLIC_DEV_CHECKOUT_PHONE || ""
+        : "",
+    email:
+      customerInfo?.email || process.env.NODE_ENV === "development"
+        ? process.env.NEXT_PUBLIC_DEV_CHECKOUT_EMAIL || ""
+        : "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -103,9 +112,34 @@ export default function CartPage() {
 
       const result = await response.json();
 
-      // Redirect to order tracking page
+      // Now redirect to Stripe Checkout
+      const checkoutResponse = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderId: result.order.id,
+          successUrl: `${window.location.origin}/order-success?order_id=${result.order.id}`,
+          cancelUrl: `${window.location.origin}/cart`,
+        }),
+      });
+
+      if (!checkoutResponse.ok) {
+        throw new Error("Failed to create checkout session");
+      }
+
+      const { url, error } = await checkoutResponse.json();
+
+      if (error) {
+        throw new Error(error);
+      }
+
+      // Clear cart and redirect to Stripe Checkout
       clearCart();
-      window.location.href = `/your-order?id=${result.order.id}`;
+      if (url) {
+        window.location.href = url;
+      }
     } catch (error) {
       console.error("Error submitting order:", error);
       alert("Failed to submit order. Please try again.");
@@ -318,8 +352,8 @@ export default function CartPage() {
                   }
                 >
                   {isSubmitting
-                    ? "Submitting..."
-                    : `Place Order - $${getTotalPrice().toFixed(2)}`}
+                    ? "Processing..."
+                    : `Continue to Payment - $${getTotalPrice().toFixed(2)}`}
                 </Button>
 
                 <Button

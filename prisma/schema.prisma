@@ -20,6 +20,7 @@ model Merchant {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   locations   MerchantLocation[]
+  adminUsers  AdminUser[]
   
   @@map("merchants")
 }
@@ -36,11 +37,17 @@ model MerchantLocation {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   
+  // Stripe Connect fields
+  stripeConnectAccountId String?
+  stripeConnectEnabled   Boolean @default(false)
+  stripeConnectSetupAt   DateTime?
+  
   merchant     Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   menu         Menu?
   orders       Order[]
   stampCards   StampCard[]
   openingHours OpeningHour[]
+  adminUsers   AdminUser[]
   
   @@unique([merchantId, slug])
   @@map("merchant_locations")
@@ -144,6 +151,14 @@ model Order {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   
+  // Payment related fields
+  stripePaymentIntentId String?
+  stripeCheckoutSessionId String?
+  paymentStatus PaymentStatus   @default(PENDING)
+  paymentAmount Decimal?        // Amount authorized (can be different from totalAmount due to tips)
+  paymentCapturedAmount Decimal? // Amount actually captured
+  paymentCapturedAt DateTime?
+  
   location    MerchantLocation  @relation(fields: [locationId], references: [id])
   items       OrderItem[]
   
@@ -187,6 +202,13 @@ enum ProductOptionType {
   @@map("product_option_type")
 }
 
+enum AdminRole {
+  LOCATION_ADMIN    // Can manage single location
+  MERCHANT_ADMIN    // Can manage all locations of a merchant
+  
+  @@map("admin_role")
+}
+
 enum OrderStatus {
   PLACED
   ACCEPTED
@@ -196,6 +218,46 @@ enum OrderStatus {
   FULFILLED
   
   @@map("order_status")
+}
+
+enum PaymentStatus {
+  PENDING     // Payment not yet attempted
+  AUTHORIZED  // Payment authorized but not captured
+  CAPTURED    // Payment captured
+  FAILED      // Payment failed
+  CANCELED    // Payment canceled
+  REFUNDED    // Payment refunded
+  
+  @@map("payment_status")
+}
+
+model AdminUser {
+  id          String            @id @default(uuid())
+  email       String            @unique
+  locationId  String?           // Make optional for multi-location admins
+  merchantId  String?           // Add direct merchant relationship
+  role        AdminRole         @default(LOCATION_ADMIN)
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  
+  location    MerchantLocation? @relation(fields: [locationId], references: [id])
+  merchant    Merchant?         @relation(fields: [merchantId], references: [id])
+  sessions    AdminSession[]
+  
+  @@map("admin_users")
+}
+
+model AdminSession {
+  id          String      @id @default(uuid())
+  userId      String
+  token       String      @unique
+  expiresAt   DateTime
+  createdAt   DateTime    @default(now())
+  
+  user        AdminUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("admin_sessions")
 }
 
 model OpeningHour {
@@ -243,4 +305,42 @@ model Stamp {
   stampCard   StampCard   @relation(fields: [stampCardId], references: [id], onDelete: Cascade)
   
   @@map("stamps")
+}
+
+model SuperAdmin {
+  id          String            @id @default(uuid())
+  email       String            @unique
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  
+  sessions    SuperAdminSession[]
+  otpCodes    SuperAdminOTP[]
+  
+  @@map("super_admins")
+}
+
+model SuperAdminSession {
+  id          String      @id @default(uuid())
+  adminId     String
+  token       String      @unique
+  expiresAt   DateTime
+  createdAt   DateTime    @default(now())
+  
+  admin       SuperAdmin  @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  
+  @@map("super_admin_sessions")
+}
+
+model SuperAdminOTP {
+  id          String      @id @default(uuid())
+  adminId     String
+  code        String      // 6-digit OTP code
+  expiresAt   DateTime    // Valid for 10 minutes
+  isUsed      Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  
+  admin       SuperAdmin  @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  
+  @@map("super_admin_otps")
 }

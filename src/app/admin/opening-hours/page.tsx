@@ -17,7 +17,7 @@ interface OpeningHour {
 
 const DAYS = [
   "Sunday",
-  "Monday", 
+  "Monday",
   "Tuesday",
   "Wednesday",
   "Thursday",
@@ -53,7 +53,7 @@ export default function OpeningHoursPage() {
 
   const fetchOpeningHours = useCallback(async () => {
     if (!locationId) return;
-    
+
     try {
       setLoading(true);
       const response = await fetch(
@@ -74,12 +74,13 @@ export default function OpeningHoursPage() {
     }
   }, [locationId, fetchOpeningHours]);
 
-  const updateOpeningHour = (dayOfWeek: number, updates: Partial<OpeningHour>) => {
-    setOpeningHours(hours =>
-      hours.map(hour =>
-        hour.dayOfWeek === dayOfWeek
-          ? { ...hour, ...updates }
-          : hour
+  const updateOpeningHour = (
+    dayOfWeek: number,
+    updates: Partial<OpeningHour>
+  ) => {
+    setOpeningHours((hours) =>
+      hours.map((hour) =>
+        hour.dayOfWeek === dayOfWeek ? { ...hour, ...updates } : hour
       )
     );
   };
@@ -87,12 +88,22 @@ export default function OpeningHoursPage() {
   const toggleDay = (dayOfWeek: number, isOpen: boolean) => {
     updateOpeningHour(dayOfWeek, {
       isOpen,
-      openTime: isOpen ? (openingHours.find(h => h.dayOfWeek === dayOfWeek)?.openTime || "10:00") : null,
-      closeTime: isOpen ? (openingHours.find(h => h.dayOfWeek === dayOfWeek)?.closeTime || "19:00") : null,
+      openTime: isOpen
+        ? openingHours.find((h) => h.dayOfWeek === dayOfWeek)?.openTime ||
+          "10:00"
+        : null,
+      closeTime: isOpen
+        ? openingHours.find((h) => h.dayOfWeek === dayOfWeek)?.closeTime ||
+          "19:00"
+        : null,
     });
   };
 
-  const updateTime = (dayOfWeek: number, field: "openTime" | "closeTime", value: string) => {
+  const updateTime = (
+    dayOfWeek: number,
+    field: "openTime" | "closeTime",
+    value: string
+  ) => {
     updateOpeningHour(dayOfWeek, { [field]: value });
   };
 
@@ -146,8 +157,8 @@ export default function OpeningHoursPage() {
               <Clock className="h-5 w-5 text-blue-600" />
               <CardTitle>Weekly Schedule</CardTitle>
             </div>
-            <Button 
-              onClick={saveOpeningHours} 
+            <Button
+              onClick={saveOpeningHours}
               disabled={saving}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
@@ -158,7 +169,7 @@ export default function OpeningHoursPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {DAYS.map((dayName, index) => {
-            const hour = openingHours.find(h => h.dayOfWeek === index);
+            const hour = openingHours.find((h) => h.dayOfWeek === index);
             const isOpen = hour?.isOpen || false;
             const openTime = hour?.openTime || "10:00";
             const closeTime = hour?.closeTime || "19:00";
@@ -167,13 +178,13 @@ export default function OpeningHoursPage() {
               <div key={index} className="border rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="w-24 font-medium text-sm">
-                      {dayName}
-                    </div>
+                    <div className="w-24 font-medium text-sm">{dayName}</div>
                     <div className="flex items-center space-x-2">
                       <Switch
                         checked={isOpen}
-                        onCheckedChange={(checked: boolean) => toggleDay(index, checked)}
+                        onCheckedChange={(checked: boolean) =>
+                          toggleDay(index, checked)
+                        }
                         className="data-[state=checked]:bg-blue-600"
                       />
                       <span className="text-sm text-gray-600">
@@ -181,26 +192,34 @@ export default function OpeningHoursPage() {
                       </span>
                     </div>
                   </div>
-                  
+
                   {isOpen && (
                     <div className="flex items-center space-x-4">
                       <div className="flex items-center space-x-2">
-                        <label className="text-sm font-medium">Opening Time</label>
+                        <label className="text-sm font-medium">
+                          Opening Time
+                        </label>
                         <Input
                           type="time"
                           value={openTime}
-                          onChange={(e) => updateTime(index, "openTime", e.target.value)}
+                          onChange={(e) =>
+                            updateTime(index, "openTime", e.target.value)
+                          }
                           className="w-32"
                         />
                         <Clock className="w-4 h-4 text-gray-400" />
                       </div>
-                      
+
                       <div className="flex items-center space-x-2">
-                        <label className="text-sm font-medium">Closing Time</label>
+                        <label className="text-sm font-medium">
+                          Closing Time
+                        </label>
                         <Input
                           type="time"
                           value={closeTime}
-                          onChange={(e) => updateTime(index, "closeTime", e.target.value)}
+                          onChange={(e) =>
+                            updateTime(index, "closeTime", e.target.value)
+                          }
                           className="w-32"
                         />
                         <Clock className="w-4 h-4 text-gray-400" />
