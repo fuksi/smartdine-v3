@@ -36,9 +36,11 @@ model MerchantLocation {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   
-  merchant    Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  menu        Menu?
-  orders      Order[]
+  merchant     Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  menu         Menu?
+  orders       Order[]
+  stampCards   StampCard[]
+  openingHours OpeningHour[]
   
   @@unique([merchantId, slug])
   @@map("merchant_locations")
@@ -194,4 +196,51 @@ enum OrderStatus {
   FULFILLED
   
   @@map("order_status")
+}
+
+model OpeningHour {
+  id          String            @id @default(uuid())
+  locationId  String
+  dayOfWeek   Int               // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  isOpen      Boolean           @default(true)
+  openTime    String?           // Format: "HH:MM" (e.g., "09:00")
+  closeTime   String?           // Format: "HH:MM" (e.g., "21:00")
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  
+  location    MerchantLocation  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  
+  @@unique([locationId, dayOfWeek])
+  @@map("opening_hours")
+}
+
+model StampCard {
+  id              String            @id @default(uuid())
+  locationId      String
+  phoneNumber     String            // International format (e.g., +358401234567)
+  firstName       String
+  stampsRequired  Int               @default(10) // Configurable stamps needed for reward
+  isDeleted       Boolean           @default(false) // Soft delete
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  location        MerchantLocation  @relation(fields: [locationId], references: [id])
+  stamps          Stamp[]
+  
+  @@unique([locationId, phoneNumber]) // Unique per restaurant
+  @@map("stamp_cards")
+}
+
+model Stamp {
+  id          String      @id @default(uuid())
+  stampCardId String
+  isClaimed   Boolean     @default(false)
+  claimedAt   DateTime?
+  isDeleted   Boolean     @default(false) // Soft delete
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  stampCard   StampCard   @relation(fields: [stampCardId], references: [id], onDelete: Cascade)
+  
+  @@map("stamps")
 }

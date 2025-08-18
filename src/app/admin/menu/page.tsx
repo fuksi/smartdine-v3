@@ -9,14 +9,13 @@ import {
   Plus,
   Edit2,
   Trash2,
-  Eye,
-  EyeOff,
   ChevronDown,
   ChevronRight,
   Package,
   FolderOpen,
   Settings,
 } from "lucide-react";
+import { ToggleSwitch } from "@/components/ui/toggle-switch";
 
 interface ProductOption {
   id: string;
@@ -778,7 +777,12 @@ export default function MenuManagementPage() {
                           )}
                         </div>
                         <Badge
-                          variant={category.isActive ? "default" : "secondary"}
+                          variant="outline"
+                          className={
+                            category.isActive
+                              ? "border-blue-500 text-blue-700 bg-blue-50"
+                              : "border-red-500 text-red-700 bg-red-50"
+                          }
                         >
                           {category.isActive ? "Active" : "Inactive"}
                         </Badge>
@@ -797,24 +801,23 @@ export default function MenuManagementPage() {
                           <Plus className="h-4 w-4" />
                           Add Product
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            toggleItemStatus(
-                              "categories",
-                              category.id,
-                              "isActive",
-                              category.isActive
-                            )
-                          }
-                        >
-                          {category.isActive ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-gray-600">
+                            {category.isActive ? "Active" : "Inactive"}
+                          </span>
+                          <ToggleSwitch
+                            checked={category.isActive}
+                            onChange={(checked) =>
+                              toggleItemStatus(
+                                "categories",
+                                category.id,
+                                "isActive",
+                                !checked
+                              )
+                            }
+                            size="sm"
+                          />
+                        </div>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -1168,10 +1171,11 @@ export default function MenuManagementPage() {
                                         </p>
                                       </div>
                                       <Badge
-                                        variant={
+                                        variant="outline"
+                                        className={
                                           product.isAvailable
-                                            ? "default"
-                                            : "secondary"
+                                            ? "border-blue-500 text-blue-700 bg-blue-50"
+                                            : "border-red-500 text-red-700 bg-red-50"
                                         }
                                       >
                                         {product.isAvailable
@@ -1188,24 +1192,25 @@ export default function MenuManagementPage() {
                                       )}
                                     </div>
                                     <div className="flex items-center gap-2">
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                          toggleItemStatus(
-                                            "products",
-                                            product.id,
-                                            "isAvailable",
-                                            product.isAvailable
-                                          )
-                                        }
-                                      >
-                                        {product.isAvailable ? (
-                                          <EyeOff className="h-4 w-4" />
-                                        ) : (
-                                          <Eye className="h-4 w-4" />
-                                        )}
-                                      </Button>
+                                      <div className="flex items-center gap-1">
+                                        <span className="text-xs text-gray-600">
+                                          {product.isAvailable
+                                            ? "Available"
+                                            : "Unavailable"}
+                                        </span>
+                                        <ToggleSwitch
+                                          checked={product.isAvailable}
+                                          onChange={(checked) =>
+                                            toggleItemStatus(
+                                              "products",
+                                              product.id,
+                                              "isAvailable",
+                                              !checked
+                                            )
+                                          }
+                                          size="sm"
+                                        />
+                                      </div>
                                       <Button
                                         variant="ghost"
                                         size="sm"

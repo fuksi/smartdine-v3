@@ -29,6 +29,29 @@ async function main() {
     },
   });
 
+  // Create opening hours
+  const openingHoursData = [
+    { day: 0, isOpen: true, open: "12:00", close: "19:00" },   // Sunday
+    { day: 1, isOpen: true, open: "12:00", close: "18:00" },   // Monday
+    { day: 2, isOpen: true, open: "10:00", close: "19:00" },   // Tuesday
+    { day: 3, isOpen: true, open: "10:00", close: "19:00" },   // Wednesday
+    { day: 4, isOpen: true, open: "10:00", close: "19:00" },   // Thursday
+    { day: 5, isOpen: true, open: "10:00", close: "19:00" },   // Friday
+    { day: 6, isOpen: true, open: "00:00", close: "19:00" },   // Saturday
+  ];
+
+  for (const { day, isOpen, open, close } of openingHoursData) {
+    await prisma.openingHour.create({
+      data: {
+        locationId: location.id,
+        dayOfWeek: day,
+        isOpen,
+        openTime: open,
+        closeTime: close,
+      },
+    });
+  }
+
   // Create menu
   const menu = await prisma.menu.create({
     data: {
