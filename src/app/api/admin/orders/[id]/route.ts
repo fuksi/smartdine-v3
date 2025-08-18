@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendOrderStatusEmail } from "@/lib/email";
+import { sendOrderStatusSMS } from "@/lib/sms";
 import {
   formatOrderForEmail,
   shouldSendEmailForStatus,
 } from "@/lib/order-email-utils";
+import {
+  formatOrderForSMS,
+  shouldSendSMSForStatus,
+} from "@/lib/order-sms-utils";
 
 export async function PATCH(
   request: NextRequest,
@@ -62,6 +67,20 @@ export async function PATCH(
       } catch (emailError) {
         console.error("❌ Failed to send email notification:", emailError);
         // Don't fail the order update if email fails
+      }
+    }
+
+    // Send SMS notification for specific status changes (Finnish numbers only)
+    if (updatedOrder.customerPhone && shouldSendSMSForStatus(status)) {
+      try {
+        const smsData = formatOrderForSMS(updatedOrder);
+        await sendOrderStatusSMS(smsData);
+        console.log(
+          `📱 SMS sent for order ${updatedOrder.displayId} status: ${status}`
+        );
+      } catch (smsError) {
+        console.error("❌ Failed to send SMS notification:", smsError);
+        // Don't fail the order update if SMS fails
       }
     }
 
