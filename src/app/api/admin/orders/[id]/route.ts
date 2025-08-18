@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { OrderStatus } from "@prisma/client";
 import { sendOrderStatusEmail } from "@/lib/email";
 import { sendOrderStatusSMS } from "@/lib/sms";
 import {
@@ -18,10 +19,10 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { status } = body;
+    const { status, estimatedPickupTime } = body;
 
     // Validate status
-    const validStatuses = [
+    const validStatuses: OrderStatus[] = [
       "PLACED",
       "ACCEPTED",
       "REJECTED",
@@ -29,13 +30,27 @@ export async function PATCH(
       "READY_FOR_PICKUP",
       "FULFILLED",
     ];
-    if (!validStatuses.includes(status)) {
+    if (!validStatuses.includes(status as OrderStatus)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+
+    // Prepare update data
+    const updateData: {
+      status: OrderStatus;
+      estimatedPickupTime?: Date;
+    } = { status: status as OrderStatus };
+
+    if (estimatedPickupTime) {
+      // Parse the time string and create a Date object for today
+      const [hours, minutes] = estimatedPickupTime.split(':');
+      const pickupDate = new Date();
+      pickupDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      updateData.estimatedPickupTime = pickupDate;
     }
 
     const updatedOrder = await prisma.order.update({
       where: { id },
-      data: { status },
+      data: updateData,
       include: {
         items: {
           include: {

@@ -5,6 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter,
+  DialogDescription 
+} from "@/components/ui/dialog";
+import { Select } from "@/components/ui/select";
 import { formatDisplayId } from "@/lib/order-utils";
 import {
   Clock,
@@ -16,6 +25,7 @@ import {
   Mail,
   Filter,
   RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 
 type OrderStatus =
@@ -60,7 +70,7 @@ interface Order {
 }
 
 const statusConfig = {
-  PLACED: { label: "Placed", color: "blue", icon: Clock },
+  PLACED: { label: "New Order", color: "blue", icon: Clock },
   ACCEPTED: { label: "Accepted", color: "green", icon: CheckCircle },
   REJECTED: { label: "Rejected", color: "red", icon: XCircle },
   PROCESSING: { label: "Processing", color: "yellow", icon: Utensils },
@@ -68,20 +78,45 @@ const statusConfig = {
   FULFILLED: { label: "Fulfilled", color: "gray", icon: CheckCircle },
 };
 
-const statusFlow = {
-  PLACED: ["ACCEPTED", "REJECTED"],
-  ACCEPTED: ["PROCESSING"],
-  PROCESSING: ["READY_FOR_PICKUP"],
-  READY_FOR_PICKUP: ["FULFILLED"],
-  REJECTED: [],
-  FULFILLED: [],
+// Simplified status flow
+const getNextAction = (status: OrderStatus) => {
+  switch (status) {
+    case "PLACED":
+      return { accept: "ACCEPTED", reject: "REJECTED" };
+    case "ACCEPTED":
+      return { ready: "READY_FOR_PICKUP" };
+    case "READY_FOR_PICKUP":
+      return { fulfilled: "FULFILLED" };
+    default:
+      return null;
+  }
 };
+
+const REJECT_REASONS = [
+  "Out of stock",
+  "Restaurant is busy at the moment",
+  "Ingredient unavailable", 
+  "Equipment issue",
+  "Other reason"
+];
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // Modal states
+  const [acceptModal, setAcceptModal] = useState<{open: boolean, orderId: string | null}>({
+    open: false,
+    orderId: null
+  });
+  const [rejectModal, setRejectModal] = useState<{open: boolean, orderId: string | null}>({
+    open: false,
+    orderId: null
+  });
+  const [preparationTime, setPreparationTime] = useState("20");
+  const [rejectReason, setRejectReason] = useState(REJECT_REASONS[0]);
 
   const fetchOrders = async () => {
     try {
@@ -106,21 +141,40 @@ export default function AdminOrdersPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const updateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
+  const updateOrderStatus = async (
+    orderId: string, 
+    newStatus: OrderStatus, 
+    estimatedPickupTime?: string
+  ) => {
     try {
+      const payload: {
+        status: OrderStatus;
+        estimatedPickupTime?: string;
+      } = { status: newStatus };
+      
+      if (estimatedPickupTime) {
+        payload.estimatedPickupTime = estimatedPickupTime;
+      }
+
       const response = await fetch(`/api/admin/orders/${orderId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
         // Update the order in the local state
         setOrders((prev) =>
           prev.map((order) =>
-            order.id === orderId ? { ...order, status: newStatus } : order
+            order.id === orderId 
+              ? { 
+                  ...order, 
+                  status: newStatus,
+                  ...(estimatedPickupTime && { estimatedPickupTime })
+                } 
+              : order
           )
         );
       } else {
@@ -129,6 +183,32 @@ export default function AdminOrdersPage() {
     } catch (error) {
       console.error("Error updating order status:", error);
       alert("Failed to update order status");
+    }
+  };
+
+  const handleAcceptOrder = () => {
+    if (acceptModal.orderId) {
+      const minutes = parseInt(preparationTime);
+      const estimatedTime = new Date();
+      estimatedTime.setMinutes(estimatedTime.getMinutes() + minutes);
+      
+      updateOrderStatus(
+        acceptModal.orderId, 
+        "ACCEPTED", 
+        estimatedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      );
+      
+      setAcceptModal({ open: false, orderId: null });
+      setPreparationTime("20"); // Reset to default
+    }
+  };
+
+  const handleRejectOrder = () => {
+    if (rejectModal.orderId) {
+      // For now, just reject without reason - we can add this to schema later
+      updateOrderStatus(rejectModal.orderId, "REJECTED");
+      setRejectModal({ open: false, orderId: null });
+      setRejectReason(REJECT_REASONS[0]); // Reset to default
     }
   };
 
@@ -192,10 +272,10 @@ export default function AdminOrdersPage() {
               <Filter className="h-4 w-4" />
               <span className="text-sm font-medium">Filters:</span>
             </div>
-            <select
+            <Select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm min-w-40"
+              className="min-w-40"
             >
               <option value="all">All Statuses</option>
               {Object.entries(statusConfig).map(([status, config]) => (
@@ -203,7 +283,7 @@ export default function AdminOrdersPage() {
                   {config.label}
                 </option>
               ))}
-            </select>
+            </Select>
             <Input
               placeholder="Search by customer name, phone, or order ID..."
               value={searchTerm}
@@ -225,7 +305,7 @@ export default function AdminOrdersPage() {
         ) : (
           filteredOrders.map((order) => {
             const StatusIcon = statusConfig[order.status].icon;
-            const availableActions = statusFlow[order.status];
+            const nextActions = getNextAction(order.status);
 
             return (
               <Card key={order.id}>
@@ -242,25 +322,49 @@ export default function AdminOrdersPage() {
                         </Badge>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {formatTime(order.createdAt)} • $
-                        {Number(order.totalAmount).toFixed(2)}
+                        {formatTime(order.createdAt)} • €{Number(order.totalAmount).toFixed(2)}
+                        {order.estimatedPickupTime && (
+                          <span> • Pickup: {order.estimatedPickupTime}</span>
+                        )}
                       </div>
                     </div>
                     <div className="flex gap-2 flex-wrap">
-                      {availableActions.map((action) => (
+                      {nextActions?.accept && (
                         <Button
-                          key={action}
                           size="sm"
-                          variant={
-                            action === "REJECTED" ? "destructive" : "brand" // Use brand (primary) color for positive actions
-                          }
-                          onClick={() =>
-                            updateOrderStatus(order.id, action as OrderStatus)
-                          }
+                          onClick={() => setAcceptModal({ open: true, orderId: order.id })}
+                          className="bg-green-600 hover:bg-green-700"
                         >
-                          {statusConfig[action as OrderStatus].label}
+                          Accept Order
                         </Button>
-                      ))}
+                      )}
+                      {nextActions?.reject && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => setRejectModal({ open: true, orderId: order.id })}
+                        >
+                          Reject Order
+                        </Button>
+                      )}
+                      {nextActions?.ready && (
+                        <Button
+                          size="sm"
+                          onClick={() => updateOrderStatus(order.id, "READY_FOR_PICKUP")}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          Mark Ready
+                        </Button>
+                      )}
+                      {nextActions?.fulfilled && (
+                        <Button
+                          size="sm"
+                          onClick={() => updateOrderStatus(order.id, "FULFILLED")}
+                          className="bg-gray-600 hover:bg-gray-700"
+                        >
+                          Mark Fulfilled
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardHeader>
@@ -268,14 +372,10 @@ export default function AdminOrdersPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Customer Info */}
                     <div>
-                      <h4 className="font-semibold mb-2">
-                        Customer Information
-                      </h4>
+                      <h4 className="font-semibold mb-2">Customer Information</h4>
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">
-                            {order.customerName}
-                          </span>
+                          <span className="font-medium">{order.customerName}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Phone className="h-4 w-4" />
@@ -313,23 +413,17 @@ export default function AdminOrdersPage() {
                               <span>
                                 {item.quantity}× {item.product.name}
                               </span>
-                              <span>${Number(item.totalPrice).toFixed(2)}</span>
+                              <span>€{Number(item.totalPrice).toFixed(2)}</span>
                             </div>
                             {item.options.length > 0 && (
                               <div className="text-xs text-muted-foreground mt-1">
                                 {item.options.map((option, idx) => (
                                   <div key={idx}>
-                                    {option.option.name}:{" "}
-                                    {option.optionValue.name}
-                                    {Number(option.optionValue.priceModifier) >
-                                      0 && (
+                                    {option.option.name}: {option.optionValue.name}
+                                    {Number(option.optionValue.priceModifier) > 0 && (
                                       <span>
                                         {" "}
-                                        (+$
-                                        {Number(
-                                          option.optionValue.priceModifier
-                                        ).toFixed(2)}
-                                        )
+                                        (+€{Number(option.optionValue.priceModifier).toFixed(2)})
                                       </span>
                                     )}
                                   </div>
@@ -347,6 +441,83 @@ export default function AdminOrdersPage() {
           })
         )}
       </div>
+
+      {/* Accept Order Modal */}
+      <Dialog open={acceptModal.open} onOpenChange={(open) => setAcceptModal({ open, orderId: null })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Accept Order</DialogTitle>
+            <DialogDescription>
+              Please specify the estimated preparation time for this order.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <label htmlFor="prep-time" className="block text-sm font-medium mb-2">
+              Preparation time (minutes)
+            </label>
+            <Input
+              id="prep-time"
+              type="number"
+              value={preparationTime}
+              onChange={(e) => setPreparationTime(e.target.value)}
+              min="5"
+              max="120"
+              className="w-full"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Customer will be notified of the estimated pickup time.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAcceptModal({ open: false, orderId: null })}>
+              Cancel
+            </Button>
+            <Button onClick={handleAcceptOrder} className="bg-green-600 hover:bg-green-700">
+              Accept Order
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject Order Modal */}
+      <Dialog open={rejectModal.open} onOpenChange={(open) => setRejectModal({ open, orderId: null })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              Reject Order
+            </DialogTitle>
+            <DialogDescription>
+              Please select a reason for rejecting this order. The customer will be notified.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <label htmlFor="reject-reason" className="block text-sm font-medium mb-2">
+              Reason for rejection
+            </label>
+            <Select
+              id="reject-reason"
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              className="w-full"
+            >
+              {REJECT_REASONS.map((reason) => (
+                <option key={reason} value={reason}>
+                  {reason}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectModal({ open: false, orderId: null })}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleRejectOrder}>
+              Reject Order
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
