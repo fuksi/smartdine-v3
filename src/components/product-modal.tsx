@@ -164,6 +164,7 @@ export function ProductModal({
       name: product.name,
       price: product.price,
       quantity,
+      canShip: product.canShip,
       options: cartOptions,
     });
 

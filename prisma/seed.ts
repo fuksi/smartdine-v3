@@ -293,6 +293,7 @@ async function main() {
         price: 8.9,
         imageUrl: null,
         isAvailable: true,
+        canShip: true,
         sortOrder: 2,
       },
     });
@@ -316,6 +317,7 @@ async function main() {
         price: 16.9,
         imageUrl: null,
         isAvailable: true,
+        canShip: true,
         sortOrder: 3,
       },
     });
@@ -338,6 +340,7 @@ async function main() {
         price: 2.5,
         imageUrl: null,
         isAvailable: true,
+        canShip: true,
         sortOrder: 1,
       },
     });

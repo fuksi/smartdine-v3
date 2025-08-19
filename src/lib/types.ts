@@ -66,5 +66,6 @@ export type SerializedProductOption = Omit<ProductOption, "optionValues"> & {
 
 export type SerializedProduct = Omit<Product, "price" | "options"> & {
   price: number;
+  canShip: boolean;
   options: SerializedProductOption[];
 };

@@ -194,6 +194,20 @@ export async function POST(request: NextRequest) {
       };
     });
 
+    // Add shipping as a line item if applicable
+    if (order.shippingCost && Number(order.shippingCost) > 0) {
+      const shippingCostInCents = Math.round(Number(order.shippingCost) * 100);
+      console.log(`\n🚚 Adding shipping line item:`);
+      console.log(`   Shipping cost: €${Number(order.shippingCost)}`);
+      console.log(`   Shipping cost in cents: ${shippingCostInCents}`);
+      
+      lineItems.push({
+        name: "Shipping",
+        quantity: 1,
+        price: shippingCostInCents,
+      });
+    }
+
     const totalLineItemsValue = lineItems.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0

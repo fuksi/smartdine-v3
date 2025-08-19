@@ -24,6 +24,11 @@ export async function POST(request: NextRequest) {
       customerEmail,
       items,
       totalAmount,
+      fulfilmentType = "PICKUP",
+      deliveryAddress,
+      deliveryPostalCode,
+      deliveryCity,
+      shippingCost,
     } = body;
 
     // Validate required fields
@@ -52,7 +57,11 @@ export async function POST(request: NextRequest) {
         customerEmail: customerEmail || null,
         totalAmount: parseFloat(totalAmount),
         status: "PLACED",
-        fulfilmentType: "PICKUP",
+        fulfilmentType: fulfilmentType,
+        deliveryAddress: deliveryAddress || null,
+        deliveryPostalCode: deliveryPostalCode || null,
+        deliveryCity: deliveryCity || null,
+        shippingCost: shippingCost ? parseFloat(shippingCost) : null,
         displayId,
         items: {
           create: items.map((item: OrderItemInput) => ({

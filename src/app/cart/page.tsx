@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { Minus, Plus, Trash2, ArrowLeft } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Minus, Plus, Trash2, ArrowLeft, Truck, MapPin } from "lucide-react";
 import { useCartStore } from "@/lib/store/cart";
+import { validateShippingAddress } from "@/lib/shipping";
 
 export default function CartPage() {
   const {
@@ -16,12 +18,19 @@ export default function CartPage() {
     locationId,
     merchantSlug,
     locationSlug,
+    fulfilmentType,
+    shippingAddress,
     updateQuantity,
     removeItem,
     clearCart,
     setCustomerInfo,
+    setFulfilmentType,
+    setShippingAddress,
+    canAllItemsBeShipped,
     getTotalPrice,
     getTotalItems,
+    getShippingCost,
+    getTotalWithShipping,
   } = useCartStore();
 
   const [formData, setFormData] = useState({
@@ -37,6 +46,12 @@ export default function CartPage() {
       customerInfo?.email || process.env.NODE_ENV === "development"
         ? process.env.NEXT_PUBLIC_DEV_CHECKOUT_EMAIL || ""
         : "",
+  });
+
+  const [shippingFormData, setShippingFormData] = useState({
+    street: shippingAddress?.street || "",
+    postalCode: shippingAddress?.postalCode || "",
+    city: shippingAddress?.city || "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,6 +92,20 @@ export default function CartPage() {
       return;
     }
 
+    // Validate shipping address if shipping is selected
+    if (fulfilmentType === 'SHIPPING') {
+      const shippingValidation = validateShippingAddress({
+        street: shippingFormData.street,
+        postalCode: shippingFormData.postalCode,
+        city: shippingFormData.city,
+      });
+
+      if (!shippingValidation.isValid) {
+        alert(`Please fix the following shipping address errors:\n${shippingValidation.errors.join('\n')}`);
+        return;
+      }
+    }
+
     if (!locationId) {
       alert("No location selected. Please go back and select a restaurant.");
       return;
@@ -85,12 +114,24 @@ export default function CartPage() {
     setIsSubmitting(true);
 
     try {
-      // Save customer info
+      // Save customer info and shipping address
       setCustomerInfo({
         name: formData.name.trim(),
         phone: formData.phone.trim(),
         email: formData.email.trim(),
       });
+
+      if (fulfilmentType === 'SHIPPING') {
+        setShippingAddress({
+          street: shippingFormData.street.trim(),
+          postalCode: shippingFormData.postalCode.trim(),
+          city: shippingFormData.city.trim(),
+        });
+      }
+
+      // Calculate totals
+      const shippingCost = getShippingCost();
+      const totalWithShipping = getTotalWithShipping();
 
       // Prepare order data
       const orderData = {
@@ -98,7 +139,12 @@ export default function CartPage() {
         customerName: formData.name.trim(),
         customerPhone: formData.phone.trim(),
         customerEmail: formData.email.trim() || null,
-        totalAmount: getTotalPrice(),
+        totalAmount: totalWithShipping,
+        fulfilmentType: fulfilmentType,
+        deliveryAddress: fulfilmentType === 'SHIPPING' ? shippingFormData.street.trim() : null,
+        deliveryPostalCode: fulfilmentType === 'SHIPPING' ? shippingFormData.postalCode.trim() : null,
+        deliveryCity: fulfilmentType === 'SHIPPING' ? shippingFormData.city.trim() : null,
+        shippingCost: fulfilmentType === 'SHIPPING' ? shippingCost : null,
         items: items.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -295,12 +341,66 @@ export default function CartPage() {
             <CardHeader>
               <CardTitle>Order Summary</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between text-lg font-semibold">
-                <span>Total:</span>
-                <span>${getTotalPrice().toFixed(2)}</span>
+            <CardContent className="space-y-6">
+              {/* Fulfillment Type Selector - only show if all items can be shipped */}
+              {canAllItemsBeShipped() && (
+                <div className="space-y-3">
+                  <h3 className="font-semibold">Delivery Option</h3>
+                  <RadioGroup
+                    value={fulfilmentType}
+                    onValueChange={(value: 'PICKUP' | 'SHIPPING') => setFulfilmentType(value)}
+                  >
+                    <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                      <RadioGroupItem value="PICKUP" id="pickup" />
+                      <label htmlFor="pickup" className="flex items-center gap-2 cursor-pointer flex-1">
+                        <MapPin className="h-4 w-4" />
+                        <div>
+                          <div className="font-medium">Click & Collect</div>
+                          <div className="text-sm text-gray-500">Pick up at restaurant</div>
+                        </div>
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                      <RadioGroupItem value="SHIPPING" id="shipping" />
+                      <label htmlFor="shipping" className="flex items-center gap-2 cursor-pointer flex-1">
+                        <Truck className="h-4 w-4" />
+                        <div>
+                          <div className="font-medium">Delivery</div>
+                          <div className="text-sm text-gray-500">
+                            €7.00 (Free over €50)
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              )}
+
+              {/* Price Summary */}
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Subtotal:</span>
+                  <span>€{getTotalPrice().toFixed(2)}</span>
+                </div>
+                {fulfilmentType === 'SHIPPING' && (
+                  <div className="flex justify-between">
+                    <span>Shipping:</span>
+                    <span>
+                      {getShippingCost() === 0 ? (
+                        <span className="text-green-600">Free</span>
+                      ) : (
+                        `€${getShippingCost().toFixed(2)}`
+                      )}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between text-lg font-semibold border-t pt-2">
+                  <span>Total:</span>
+                  <span>€{getTotalWithShipping().toFixed(2)}</span>
+                </div>
               </div>
 
+              {/* Customer Information */}
               <div className="border-t pt-4 space-y-4">
                 <h3 className="font-semibold">Customer Information</h3>
 
@@ -355,6 +455,74 @@ export default function CartPage() {
                   />
                 </div>
 
+                {/* Shipping Address - only show if shipping is selected */}
+                {fulfilmentType === 'SHIPPING' && (
+                  <div className="border-t pt-4 space-y-4">
+                    <h3 className="font-semibold">Delivery Address</h3>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Street Address *
+                      </label>
+                      <Input
+                        type="text"
+                        value={shippingFormData.street}
+                        onChange={(e) =>
+                          setShippingFormData((prev) => ({ 
+                            ...prev, 
+                            street: e.target.value 
+                          }))
+                        }
+                        placeholder="Street name and number"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Postal Code *
+                        </label>
+                        <Input
+                          type="text"
+                          value={shippingFormData.postalCode}
+                          onChange={(e) =>
+                            setShippingFormData((prev) => ({ 
+                              ...prev, 
+                              postalCode: e.target.value 
+                            }))
+                          }
+                          placeholder="00000"
+                          maxLength={5}
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          City *
+                        </label>
+                        <Input
+                          type="text"
+                          value={shippingFormData.city}
+                          onChange={(e) =>
+                            setShippingFormData((prev) => ({ 
+                              ...prev, 
+                              city: e.target.value 
+                            }))
+                          }
+                          placeholder="City"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-gray-500">
+                      Currently only delivering within Finland
+                    </p>
+                  </div>
+                )}
+
                 <Button
                   variant="brand"
                   className="w-full"
@@ -366,12 +534,22 @@ export default function CartPage() {
                     !formData.phone.trim() ||
                     !formData.email.trim() ||
                     !isValidEmail(formData.email) ||
-                    !isPhoneValid
+                    !isPhoneValid ||
+                    (fulfilmentType === 'SHIPPING' && (
+                      !shippingFormData.street.trim() ||
+                      !shippingFormData.postalCode.trim() ||
+                      !shippingFormData.city.trim() ||
+                      !validateShippingAddress({
+                        street: shippingFormData.street,
+                        postalCode: shippingFormData.postalCode,
+                        city: shippingFormData.city,
+                      }).isValid
+                    ))
                   }
                 >
                   {isSubmitting
                     ? "Processing..."
-                    : `Continue to Payment - $${getTotalPrice().toFixed(2)}`}
+                    : `Continue to Payment - €${getTotalWithShipping().toFixed(2)}`}
                 </Button>
 
                 <Button

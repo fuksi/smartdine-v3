@@ -66,6 +66,7 @@ export default async function RestaurantPageServer({
         products: category.products.map((product) => ({
           ...product,
           price: Number(product.price),
+          canShip: product.canShip,
           options: product.options.map((option) => ({
             ...option,
             optionValues: option.optionValues.map((value) => ({
