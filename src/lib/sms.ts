@@ -1,8 +1,8 @@
 interface PushbulletTextMessage {
   data: {
-    target_device_iden: string;
-    conversation_iden: string;
+    addresses: string[];
     message: string;
+    target_device_iden: string;
   };
 }
 
@@ -84,9 +84,9 @@ async function sendPushbulletSMS(
 
   const textMessage: PushbulletTextMessage = {
     data: {
-      target_device_iden: deviceId,
-      conversation_iden: phoneNumber,
+      addresses: [phoneNumber],
       message: message,
+      target_device_iden: deviceId,
     },
   };
 
