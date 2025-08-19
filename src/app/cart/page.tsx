@@ -93,7 +93,7 @@ export default function CartPage() {
     }
 
     // Validate shipping address if shipping is selected
-    if (fulfilmentType === 'SHIPPING') {
+    if (fulfilmentType === "SHIPPING") {
       const shippingValidation = validateShippingAddress({
         street: shippingFormData.street,
         postalCode: shippingFormData.postalCode,
@@ -101,7 +101,11 @@ export default function CartPage() {
       });
 
       if (!shippingValidation.isValid) {
-        alert(`Please fix the following shipping address errors:\n${shippingValidation.errors.join('\n')}`);
+        alert(
+          `Please fix the following shipping address errors:\n${shippingValidation.errors.join(
+            "\n"
+          )}`
+        );
         return;
       }
     }
@@ -121,7 +125,7 @@ export default function CartPage() {
         email: formData.email.trim(),
       });
 
-      if (fulfilmentType === 'SHIPPING') {
+      if (fulfilmentType === "SHIPPING") {
         setShippingAddress({
           street: shippingFormData.street.trim(),
           postalCode: shippingFormData.postalCode.trim(),
@@ -141,10 +145,15 @@ export default function CartPage() {
         customerEmail: formData.email.trim() || null,
         totalAmount: totalWithShipping,
         fulfilmentType: fulfilmentType,
-        deliveryAddress: fulfilmentType === 'SHIPPING' ? shippingFormData.street.trim() : null,
-        deliveryPostalCode: fulfilmentType === 'SHIPPING' ? shippingFormData.postalCode.trim() : null,
-        deliveryCity: fulfilmentType === 'SHIPPING' ? shippingFormData.city.trim() : null,
-        shippingCost: fulfilmentType === 'SHIPPING' ? shippingCost : null,
+        deliveryAddress:
+          fulfilmentType === "SHIPPING" ? shippingFormData.street.trim() : null,
+        deliveryPostalCode:
+          fulfilmentType === "SHIPPING"
+            ? shippingFormData.postalCode.trim()
+            : null,
+        deliveryCity:
+          fulfilmentType === "SHIPPING" ? shippingFormData.city.trim() : null,
+        shippingCost: fulfilmentType === "SHIPPING" ? shippingCost : null,
         items: items.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -348,21 +357,31 @@ export default function CartPage() {
                   <h3 className="font-semibold">Delivery Option</h3>
                   <RadioGroup
                     value={fulfilmentType}
-                    onValueChange={(value: 'PICKUP' | 'SHIPPING') => setFulfilmentType(value)}
+                    onValueChange={(value: "PICKUP" | "SHIPPING") =>
+                      setFulfilmentType(value)
+                    }
                   >
                     <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
                       <RadioGroupItem value="PICKUP" id="pickup" />
-                      <label htmlFor="pickup" className="flex items-center gap-2 cursor-pointer flex-1">
+                      <label
+                        htmlFor="pickup"
+                        className="flex items-center gap-2 cursor-pointer flex-1"
+                      >
                         <MapPin className="h-4 w-4" />
                         <div>
                           <div className="font-medium">Click & Collect</div>
-                          <div className="text-sm text-gray-500">Pick up at restaurant</div>
+                          <div className="text-sm text-gray-500">
+                            Pick up at restaurant
+                          </div>
                         </div>
                       </label>
                     </div>
                     <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
                       <RadioGroupItem value="SHIPPING" id="shipping" />
-                      <label htmlFor="shipping" className="flex items-center gap-2 cursor-pointer flex-1">
+                      <label
+                        htmlFor="shipping"
+                        className="flex items-center gap-2 cursor-pointer flex-1"
+                      >
                         <Truck className="h-4 w-4" />
                         <div>
                           <div className="font-medium">Delivery</div>
@@ -382,7 +401,7 @@ export default function CartPage() {
                   <span>Subtotal:</span>
                   <span>€{getTotalPrice().toFixed(2)}</span>
                 </div>
-                {fulfilmentType === 'SHIPPING' && (
+                {fulfilmentType === "SHIPPING" && (
                   <div className="flex justify-between">
                     <span>Shipping:</span>
                     <span>
@@ -430,11 +449,6 @@ export default function CartPage() {
                     placeholder="Phone number"
                     className="w-full"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Enter your Finnish number without the leading 0 (e.g.,
-                    401234567 instead of 0401234567). If you include the 0, it
-                    will be automatically converted.
-                  </p>
                 </div>
 
                 <div>
@@ -456,10 +470,10 @@ export default function CartPage() {
                 </div>
 
                 {/* Shipping Address - only show if shipping is selected */}
-                {fulfilmentType === 'SHIPPING' && (
+                {fulfilmentType === "SHIPPING" && (
                   <div className="border-t pt-4 space-y-4">
                     <h3 className="font-semibold">Delivery Address</h3>
-                    
+
                     <div>
                       <label className="block text-sm font-medium mb-1">
                         Street Address *
@@ -468,9 +482,9 @@ export default function CartPage() {
                         type="text"
                         value={shippingFormData.street}
                         onChange={(e) =>
-                          setShippingFormData((prev) => ({ 
-                            ...prev, 
-                            street: e.target.value 
+                          setShippingFormData((prev) => ({
+                            ...prev,
+                            street: e.target.value,
                           }))
                         }
                         placeholder="Street name and number"
@@ -487,9 +501,9 @@ export default function CartPage() {
                           type="text"
                           value={shippingFormData.postalCode}
                           onChange={(e) =>
-                            setShippingFormData((prev) => ({ 
-                              ...prev, 
-                              postalCode: e.target.value 
+                            setShippingFormData((prev) => ({
+                              ...prev,
+                              postalCode: e.target.value,
                             }))
                           }
                           placeholder="00000"
@@ -506,9 +520,9 @@ export default function CartPage() {
                           type="text"
                           value={shippingFormData.city}
                           onChange={(e) =>
-                            setShippingFormData((prev) => ({ 
-                              ...prev, 
-                              city: e.target.value 
+                            setShippingFormData((prev) => ({
+                              ...prev,
+                              city: e.target.value,
                             }))
                           }
                           placeholder="City"
@@ -535,21 +549,22 @@ export default function CartPage() {
                     !formData.email.trim() ||
                     !isValidEmail(formData.email) ||
                     !isPhoneValid ||
-                    (fulfilmentType === 'SHIPPING' && (
-                      !shippingFormData.street.trim() ||
-                      !shippingFormData.postalCode.trim() ||
-                      !shippingFormData.city.trim() ||
-                      !validateShippingAddress({
-                        street: shippingFormData.street,
-                        postalCode: shippingFormData.postalCode,
-                        city: shippingFormData.city,
-                      }).isValid
-                    ))
+                    (fulfilmentType === "SHIPPING" &&
+                      (!shippingFormData.street.trim() ||
+                        !shippingFormData.postalCode.trim() ||
+                        !shippingFormData.city.trim() ||
+                        !validateShippingAddress({
+                          street: shippingFormData.street,
+                          postalCode: shippingFormData.postalCode,
+                          city: shippingFormData.city,
+                        }).isValid))
                   }
                 >
                   {isSubmitting
                     ? "Processing..."
-                    : `Continue to Payment - €${getTotalWithShipping().toFixed(2)}`}
+                    : `Continue to Payment - €${getTotalWithShipping().toFixed(
+                        2
+                      )}`}
                 </Button>
 
                 <Button
