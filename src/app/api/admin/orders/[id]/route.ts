@@ -42,7 +42,7 @@ export async function PATCH(
 
     if (estimatedPickupTime) {
       // Parse the time string and create a Date object for today
-      const [hours, minutes] = estimatedPickupTime.split(':');
+      const [hours, minutes] = estimatedPickupTime.split(":");
       const pickupDate = new Date();
       pickupDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
       updateData.estimatedPickupTime = pickupDate;

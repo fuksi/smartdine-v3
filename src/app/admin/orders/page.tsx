@@ -5,13 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogFooter,
-  DialogDescription 
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
 import { formatDisplayId } from "@/lib/order-utils";
@@ -95,9 +95,9 @@ const getNextAction = (status: OrderStatus) => {
 const REJECT_REASONS = [
   "Out of stock",
   "Restaurant is busy at the moment",
-  "Ingredient unavailable", 
+  "Ingredient unavailable",
   "Equipment issue",
-  "Other reason"
+  "Other reason",
 ];
 
 export default function AdminOrdersPage() {
@@ -105,15 +105,21 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   // Modal states
-  const [acceptModal, setAcceptModal] = useState<{open: boolean, orderId: string | null}>({
+  const [acceptModal, setAcceptModal] = useState<{
+    open: boolean;
+    orderId: string | null;
+  }>({
     open: false,
-    orderId: null
+    orderId: null,
   });
-  const [rejectModal, setRejectModal] = useState<{open: boolean, orderId: string | null}>({
+  const [rejectModal, setRejectModal] = useState<{
+    open: boolean;
+    orderId: string | null;
+  }>({
     open: false,
-    orderId: null
+    orderId: null,
   });
   const [preparationTime, setPreparationTime] = useState("20");
   const [rejectReason, setRejectReason] = useState(REJECT_REASONS[0]);
@@ -142,8 +148,8 @@ export default function AdminOrdersPage() {
   }, []);
 
   const updateOrderStatus = async (
-    orderId: string, 
-    newStatus: OrderStatus, 
+    orderId: string,
+    newStatus: OrderStatus,
     estimatedPickupTime?: string
   ) => {
     try {
@@ -151,7 +157,7 @@ export default function AdminOrdersPage() {
         status: OrderStatus;
         estimatedPickupTime?: string;
       } = { status: newStatus };
-      
+
       if (estimatedPickupTime) {
         payload.estimatedPickupTime = estimatedPickupTime;
       }
@@ -168,12 +174,12 @@ export default function AdminOrdersPage() {
         // Update the order in the local state
         setOrders((prev) =>
           prev.map((order) =>
-            order.id === orderId 
-              ? { 
-                  ...order, 
+            order.id === orderId
+              ? {
+                  ...order,
                   status: newStatus,
-                  ...(estimatedPickupTime && { estimatedPickupTime })
-                } 
+                  ...(estimatedPickupTime && { estimatedPickupTime }),
+                }
               : order
           )
         );
@@ -191,13 +197,16 @@ export default function AdminOrdersPage() {
       const minutes = parseInt(preparationTime);
       const estimatedTime = new Date();
       estimatedTime.setMinutes(estimatedTime.getMinutes() + minutes);
-      
+
       updateOrderStatus(
-        acceptModal.orderId, 
-        "ACCEPTED", 
-        estimatedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        acceptModal.orderId,
+        "ACCEPTED",
+        estimatedTime.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
       );
-      
+
       setAcceptModal({ open: false, orderId: null });
       setPreparationTime("20"); // Reset to default
     }
@@ -322,7 +331,8 @@ export default function AdminOrdersPage() {
                         </Badge>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {formatTime(order.createdAt)} • €{Number(order.totalAmount).toFixed(2)}
+                        {formatTime(order.createdAt)} • €
+                        {Number(order.totalAmount).toFixed(2)}
                         {order.estimatedPickupTime && (
                           <span> • Pickup: {order.estimatedPickupTime}</span>
                         )}
@@ -332,7 +342,9 @@ export default function AdminOrdersPage() {
                       {nextActions?.accept && (
                         <Button
                           size="sm"
-                          onClick={() => setAcceptModal({ open: true, orderId: order.id })}
+                          onClick={() =>
+                            setAcceptModal({ open: true, orderId: order.id })
+                          }
                           className="bg-green-600 hover:bg-green-700"
                         >
                           Accept Order
@@ -342,7 +354,9 @@ export default function AdminOrdersPage() {
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => setRejectModal({ open: true, orderId: order.id })}
+                          onClick={() =>
+                            setRejectModal({ open: true, orderId: order.id })
+                          }
                         >
                           Reject Order
                         </Button>
@@ -350,7 +364,9 @@ export default function AdminOrdersPage() {
                       {nextActions?.ready && (
                         <Button
                           size="sm"
-                          onClick={() => updateOrderStatus(order.id, "READY_FOR_PICKUP")}
+                          onClick={() =>
+                            updateOrderStatus(order.id, "READY_FOR_PICKUP")
+                          }
                           className="bg-blue-600 hover:bg-blue-700"
                         >
                           Mark Ready
@@ -359,7 +375,9 @@ export default function AdminOrdersPage() {
                       {nextActions?.fulfilled && (
                         <Button
                           size="sm"
-                          onClick={() => updateOrderStatus(order.id, "FULFILLED")}
+                          onClick={() =>
+                            updateOrderStatus(order.id, "FULFILLED")
+                          }
                           className="bg-gray-600 hover:bg-gray-700"
                         >
                           Mark Fulfilled
@@ -372,10 +390,14 @@ export default function AdminOrdersPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Customer Info */}
                     <div>
-                      <h4 className="font-semibold mb-2">Customer Information</h4>
+                      <h4 className="font-semibold mb-2">
+                        Customer Information
+                      </h4>
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{order.customerName}</span>
+                          <span className="font-medium">
+                            {order.customerName}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Phone className="h-4 w-4" />
@@ -419,11 +441,17 @@ export default function AdminOrdersPage() {
                               <div className="text-xs text-muted-foreground mt-1">
                                 {item.options.map((option, idx) => (
                                   <div key={idx}>
-                                    {option.option.name}: {option.optionValue.name}
-                                    {Number(option.optionValue.priceModifier) > 0 && (
+                                    {option.option.name}:{" "}
+                                    {option.optionValue.name}
+                                    {Number(option.optionValue.priceModifier) >
+                                      0 && (
                                       <span>
                                         {" "}
-                                        (+€{Number(option.optionValue.priceModifier).toFixed(2)})
+                                        (+€
+                                        {Number(
+                                          option.optionValue.priceModifier
+                                        ).toFixed(2)}
+                                        )
                                       </span>
                                     )}
                                   </div>
@@ -443,7 +471,10 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Accept Order Modal */}
-      <Dialog open={acceptModal.open} onOpenChange={(open) => setAcceptModal({ open, orderId: null })}>
+      <Dialog
+        open={acceptModal.open}
+        onOpenChange={(open) => setAcceptModal({ open, orderId: null })}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Accept Order</DialogTitle>
@@ -452,7 +483,10 @@ export default function AdminOrdersPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <label htmlFor="prep-time" className="block text-sm font-medium mb-2">
+            <label
+              htmlFor="prep-time"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Preparation time (minutes)
             </label>
             <Input
@@ -464,15 +498,21 @@ export default function AdminOrdersPage() {
               max="120"
               className="w-full"
             />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-gray-500 mt-1">
               Customer will be notified of the estimated pickup time.
             </p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAcceptModal({ open: false, orderId: null })}>
+            <Button
+              variant="outline"
+              onClick={() => setAcceptModal({ open: false, orderId: null })}
+            >
               Cancel
             </Button>
-            <Button onClick={handleAcceptOrder} className="bg-green-600 hover:bg-green-700">
+            <Button
+              onClick={handleAcceptOrder}
+              className="bg-green-600 hover:bg-green-700"
+            >
               Accept Order
             </Button>
           </DialogFooter>
@@ -480,7 +520,10 @@ export default function AdminOrdersPage() {
       </Dialog>
 
       {/* Reject Order Modal */}
-      <Dialog open={rejectModal.open} onOpenChange={(open) => setRejectModal({ open, orderId: null })}>
+      <Dialog
+        open={rejectModal.open}
+        onOpenChange={(open) => setRejectModal({ open, orderId: null })}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -488,11 +531,15 @@ export default function AdminOrdersPage() {
               Reject Order
             </DialogTitle>
             <DialogDescription>
-              Please select a reason for rejecting this order. The customer will be notified.
+              Please select a reason for rejecting this order. The customer will
+              be notified.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <label htmlFor="reject-reason" className="block text-sm font-medium mb-2">
+            <label
+              htmlFor="reject-reason"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Reason for rejection
             </label>
             <Select
@@ -509,7 +556,10 @@ export default function AdminOrdersPage() {
             </Select>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectModal({ open: false, orderId: null })}>
+            <Button
+              variant="outline"
+              onClick={() => setRejectModal({ open: false, orderId: null })}
+            >
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleRejectOrder}>
