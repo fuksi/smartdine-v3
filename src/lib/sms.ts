@@ -43,10 +43,6 @@ const isFinnishPhoneNumber = (phone: string): boolean => {
   // Remove spaces, dashes, and plus signs for checking
   const cleanPhone = phone.replace(/[\s\-\+]/g, "");
 
-  console.log(`📱 SMS: Checking if phone number is Finnish:`);
-  console.log(`📱 SMS: Original: ${phone}`);
-  console.log(`📱 SMS: Cleaned: ${cleanPhone}`);
-
   // Check if it starts with Finnish country code or is a Finnish mobile number
   // Finnish mobile numbers: +358 4X, +358 5X, or domestic format 04X, 05X
   const finnishPatterns = [
@@ -55,7 +51,6 @@ const isFinnishPhoneNumber = (phone: string): boolean => {
   ];
 
   const isFinnish = finnishPatterns.some((pattern) => pattern.test(cleanPhone));
-  console.log(`📱 SMS: Is Finnish number: ${isFinnish}`);
 
   return isFinnish;
 };
@@ -66,14 +61,6 @@ async function sendPushbulletSMS(
 ): Promise<void> {
   const apiKey = process.env.PUSHBULLET_API_KEY;
   const deviceId = process.env.PUSHBULLET_DEVICE_ID;
-
-  console.log(`📱 SMS: Preparing to send Pushbullet SMS`);
-  console.log(`📱 SMS: API Key configured: ${!!apiKey}`);
-  console.log(`📱 SMS: Device ID configured: ${!!deviceId}`);
-  console.log(`📱 SMS: Device ID: ${deviceId}`);
-  console.log(`📱 SMS: Target phone number: ${phoneNumber}`);
-  console.log(`📱 SMS: Message length: ${message.length} characters`);
-  console.log(`📱 SMS: Message preview: ${message.substring(0, 100)}...`);
 
   if (!apiKey || !deviceId) {
     console.error(
@@ -90,9 +77,6 @@ async function sendPushbulletSMS(
     },
   };
 
-  console.log(`📱 SMS: Sending SMS to Pushbullet texts API:`);
-  console.log(`📱 SMS: Message payload:`, JSON.stringify(textMessage, null, 2));
-
   try {
     const response = await fetch("https://api.pushbullet.com/v2/texts", {
       method: "POST",
@@ -103,14 +87,7 @@ async function sendPushbulletSMS(
       body: JSON.stringify(textMessage),
     });
 
-    console.log(`📱 SMS: Pushbullet API response status: ${response.status}`);
-    console.log(
-      `📱 SMS: Pushbullet API response headers:`,
-      Object.fromEntries(response.headers.entries())
-    );
-
     const responseText = await response.text();
-    console.log(`📱 SMS: Pushbullet API response body:`, responseText);
 
     if (!response.ok) {
       console.error(
@@ -123,16 +100,8 @@ async function sendPushbulletSMS(
 
     // Try to parse as JSON for better logging
     try {
-      const responseData = JSON.parse(responseText);
-      console.log(
-        `📱 SMS: ✅ Pushbullet API success response:`,
-        JSON.stringify(responseData, null, 2)
-      );
-    } catch {
-      console.log(`📱 SMS: ✅ Response is not JSON, raw text:`, responseText);
-    }
-
-    console.log(`📱 SMS: ✅ SMS sent successfully via Pushbullet texts API!`);
+      JSON.parse(responseText);
+    } catch {}
   } catch (error) {
     console.error(`📱 SMS: ❌ Error sending SMS:`, error);
     throw error;
@@ -140,20 +109,9 @@ async function sendPushbulletSMS(
 }
 
 export async function sendOrderAcceptedSMS(data: OrderSMSData) {
-  console.log(
-    `📱 SMS: Starting sendOrderAcceptedSMS for order ${data.orderId}`
-  );
-  console.log(`📱 SMS: Target phone number: ${data.customerPhone}`);
-  console.log(`📱 SMS: Customer name: ${data.customerName}`);
-
   if (!isFinnishPhoneNumber(data.customerPhone)) {
-    console.log(
-      `📱 SMS: ⚠️  Skipping SMS for non-Finnish number: ${data.customerPhone}`
-    );
     return;
   }
-
-  console.log(`📱 SMS: ✅ Finnish number validated, proceeding with SMS`);
 
   const itemsText = data.items
     .map((item) => {
@@ -191,24 +149,13 @@ ${
 
 Thank you for your order!`;
 
-  console.log(`📱 SMS: Sending ACCEPTED SMS to ${data.customerPhone}`);
   await sendPushbulletSMS(data.customerPhone, message);
-  console.log(`📱 SMS: ✅ ACCEPTED SMS completed for order ${data.orderId}`);
 }
 
 export async function sendOrderReadySMS(data: OrderSMSData) {
-  console.log(`📱 SMS: Starting sendOrderReadySMS for order ${data.orderId}`);
-  console.log(`📱 SMS: Target phone number: ${data.customerPhone}`);
-  console.log(`📱 SMS: Customer name: ${data.customerName}`);
-
   if (!isFinnishPhoneNumber(data.customerPhone)) {
-    console.log(
-      `📱 SMS: ⚠️  Skipping SMS for non-Finnish number: ${data.customerPhone}`
-    );
     return;
   }
-
-  console.log(`📱 SMS: ✅ Finnish number validated, proceeding with SMS`);
 
   const message = `${data.merchantName} - Order #${formatDisplayId(
     data.displayId
@@ -227,26 +174,13 @@ Please come and collect your order.
 
 Thank you!`;
 
-  console.log(`📱 SMS: Sending READY SMS to ${data.customerPhone}`);
   await sendPushbulletSMS(data.customerPhone, message);
-  console.log(`📱 SMS: ✅ READY SMS completed for order ${data.orderId}`);
 }
 
 export async function sendOrderRejectedSMS(data: OrderSMSData) {
-  console.log(
-    `📱 SMS: Starting sendOrderRejectedSMS for order ${data.orderId}`
-  );
-  console.log(`📱 SMS: Target phone number: ${data.customerPhone}`);
-  console.log(`📱 SMS: Customer name: ${data.customerName}`);
-
   if (!isFinnishPhoneNumber(data.customerPhone)) {
-    console.log(
-      `📱 SMS: ⚠️  Skipping SMS for non-Finnish number: ${data.customerPhone}`
-    );
     return;
   }
-
-  console.log(`📱 SMS: ✅ Finnish number validated, proceeding with SMS`);
 
   const message = `${data.merchantName} - Order #${formatDisplayId(
     data.displayId
@@ -264,47 +198,26 @@ If you have any questions, please contact us.
 
 We apologize for any inconvenience.`;
 
-  console.log(`📱 SMS: Sending REJECTED SMS to ${data.customerPhone}`);
   await sendPushbulletSMS(data.customerPhone, message);
-  console.log(`📱 SMS: ✅ REJECTED SMS completed for order ${data.orderId}`);
 }
 
 function shouldSendSMSForStatus(status: string): boolean {
-  const shouldSend = ["ACCEPTED", "READY_FOR_PICKUP", "REJECTED"].includes(
-    status
-  );
-  console.log(`📱 SMS: Should send SMS for status '${status}': ${shouldSend}`);
-  return shouldSend;
+  return ["ACCEPTED", "READY_FOR_PICKUP", "REJECTED"].includes(status);
 }
 
 export async function sendOrderStatusSMS(data: OrderSMSData) {
-  console.log(`📱 SMS: =========================`);
-  console.log(`📱 SMS: Order Status SMS Request`);
-  console.log(`📱 SMS: Order ID: ${data.orderId}`);
-  console.log(`📱 SMS: Display ID: ${data.displayId}`);
-  console.log(`📱 SMS: Status: ${data.status}`);
-  console.log(`📱 SMS: Customer: ${data.customerName}`);
-  console.log(`📱 SMS: Phone: ${data.customerPhone}`);
-  console.log(`📱 SMS: =========================`);
-
   if (!shouldSendSMSForStatus(data.status)) {
-    console.log(`📱 SMS: ⚠️  No SMS needed for status: ${data.status}`);
     return;
   }
-
   try {
     switch (data.status) {
       case "ACCEPTED":
-        console.log(`📱 SMS: 📤 Sending ACCEPTED SMS`);
         return await sendOrderAcceptedSMS(data);
       case "READY_FOR_PICKUP":
-        console.log(`📱 SMS: 📤 Sending READY_FOR_PICKUP SMS`);
         return await sendOrderReadySMS(data);
       case "REJECTED":
-        console.log(`📱 SMS: 📤 Sending REJECTED SMS`);
         return await sendOrderRejectedSMS(data);
       default:
-        console.log(`📱 SMS: ⚠️  Unknown status: ${data.status}`);
         return;
     }
   } catch (error) {
