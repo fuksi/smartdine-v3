@@ -1,9 +1,8 @@
 "use client";
 
-import React from "react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
+import * as Dialog from "@radix-ui/react-dialog";
 import { X, Plus, Minus, AlertCircle, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -182,29 +181,31 @@ export function ProductModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-full max-w-lg max-h-[95vh] p-0" showCloseButton={false}>
-        <div className="flex flex-col max-h-[95vh]">
-          {/* Header with Image */}
-          <div className="relative">
-            {product.imageUrl ? (
-              <div className="relative w-full h-64 bg-gradient-to-b from-gray-100 to-gray-200">
-                <Image
-                  src={product.imageUrl}
-                  alt={product.name}
-                  fill
-                  className="object-cover rounded-t-2xl"
-                />
-              </div>
+    <Dialog.Root open={isOpen} onOpenChange={onClose}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 bg-black/60 z-40" />
+        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[95vh] overflow-hidden z-50 border-0">
+          <div className="flex flex-col max-h-[95vh]">
+            {/* Header with Image */}
+            <div className="relative">
+              {product.imageUrl ? (
+                <div className="relative w-full h-64 bg-gradient-to-b from-gray-100 to-gray-200">
+                  <Image
+                    src={product.imageUrl}
+                    alt={product.name}
+                    fill
+                    className="object-cover rounded-t-2xl"
+                  />
+                </div>
               ) : (
                 <div className="w-full h-64 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-t-2xl">
                   <span className="text-gray-400 text-lg">No image</span>
                 </div>
               )}
 
-              <DialogClose className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full transition-colors shadow-lg">
+              <Dialog.Close className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full transition-colors shadow-lg">
                 <X className="h-5 w-5 text-gray-700" />
-              </DialogClose>
+              </Dialog.Close>
 
               {/* Popular badge if needed */}
               <div className="absolute top-4 left-4">
@@ -339,7 +340,7 @@ export function ProductModal({
                                         value.id
                                       ) || false
                                     }
-                                    onChange={() =>
+                                    onCheckedChange={() =>
                                       handleOptionChange(
                                         option.id,
                                         value.id,
@@ -419,7 +420,8 @@ export function ProductModal({
               </div>
             </div>
           </div>
-      </DialogContent>
-    </Dialog>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
