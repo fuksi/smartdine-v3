@@ -997,6 +997,293 @@ async function seedBonbonCoffee() {
     }
   }
 
+  // Create product options for coffee customization
+  console.log("\n📋 Creating product options...");
+  
+  // First, let's find some specific products that need options
+  const matchaDrinkProduct = await prisma.product.findFirst({
+    where: {
+      category: { menuId: menu.id },
+      name: { contains: "Matcha" }
+    }
+  });
+
+  const roseDrinkProduct = await prisma.product.findFirst({
+    where: {
+      category: { menuId: menu.id },
+      name: { contains: "Rose" }
+    }
+  });
+
+  const caffeineProduct = await prisma.product.findFirst({
+    where: {
+      category: { menuId: menu.id },
+      OR: [
+        { name: { contains: "Latte" } },
+        { name: { contains: "Coffee" } }
+      ]
+    }
+  });
+
+  // Create options for Matcha drinks
+  if (matchaDrinkProduct) {
+    // Select Matcha drink option
+    const matchaSelectionOption = await prisma.productOption.create({
+      data: {
+        productId: matchaDrinkProduct.id,
+        name: "Select Matcha drink",
+        description: "Choose your matcha variety",
+        type: "RADIO",
+        isRequired: true,
+        sortOrder: 1,
+      },
+    });
+
+    await prisma.productOptionValue.createMany({
+      data: [
+        {
+          optionId: matchaSelectionOption.id,
+          name: "Normal",
+          priceModifier: 0,
+          isDefault: true,
+          sortOrder: 1,
+        },
+        {
+          optionId: matchaSelectionOption.id,
+          name: "Strawberry Matcha",
+          priceModifier: 0.30,
+          isDefault: false,
+          sortOrder: 2,
+        }
+      ]
+    });
+
+    // Milk option for Matcha
+    const matchaMilkOption = await prisma.productOption.create({
+      data: {
+        productId: matchaDrinkProduct.id,
+        name: "Milk option for Matcha",
+        description: "Choose your preferred milk",
+        type: "RADIO",
+        isRequired: true,
+        sortOrder: 2,
+      },
+    });
+
+    await prisma.productOptionValue.createMany({
+      data: [
+        {
+          optionId: matchaMilkOption.id,
+          name: "Lactose-free Milk",
+          priceModifier: 0,
+          isDefault: true,
+          sortOrder: 1,
+        },
+        {
+          optionId: matchaMilkOption.id,
+          name: "Oat Milk",
+          priceModifier: 0,
+          isDefault: false,
+          sortOrder: 2,
+        }
+      ]
+    });
+
+    console.log(`✓ Created options for ${matchaDrinkProduct.name}`);
+  }
+
+  // Create options for Rose drinks
+  if (roseDrinkProduct) {
+    // Rose Drink 1: Milk option
+    const roseMilkOption1 = await prisma.productOption.create({
+      data: {
+        productId: roseDrinkProduct.id,
+        name: "Rose Drink 1: Milk option",
+        description: "Choose your preferred milk",
+        type: "RADIO",
+        isRequired: true,
+        sortOrder: 1,
+      },
+    });
+
+    await prisma.productOptionValue.createMany({
+      data: [
+        {
+          optionId: roseMilkOption1.id,
+          name: "Lactose-free Milk",
+          priceModifier: 0,
+          isDefault: true,
+          sortOrder: 1,
+        },
+        {
+          optionId: roseMilkOption1.id,
+          name: "Oat Milk",
+          priceModifier: 0,
+          isDefault: false,
+          sortOrder: 2,
+        }
+      ]
+    });
+
+    // Rose Drink 1: Caffeine option
+    const roseCaffeineOption1 = await prisma.productOption.create({
+      data: {
+        productId: roseDrinkProduct.id,
+        name: "Rose Drink 1: Caffeine option",
+        description: "Choose your caffeine base",
+        type: "RADIO",
+        isRequired: true,
+        sortOrder: 2,
+      },
+    });
+
+    await prisma.productOptionValue.createMany({
+      data: [
+        {
+          optionId: roseCaffeineOption1.id,
+          name: "Coffee",
+          priceModifier: 0,
+          isDefault: true,
+          sortOrder: 1,
+        },
+        {
+          optionId: roseCaffeineOption1.id,
+          name: "Matcha",
+          priceModifier: 0,
+          isDefault: false,
+          sortOrder: 2,
+        }
+      ]
+    });
+
+    // Rose Drink 1: Hot or Cold
+    const roseHotColdOption1 = await prisma.productOption.create({
+      data: {
+        productId: roseDrinkProduct.id,
+        name: "Rose Drink 1: Hot or Cold?",
+        description: "Choose temperature and cream options",
+        type: "RADIO",
+        isRequired: true,
+        sortOrder: 3,
+      },
+    });
+
+    await prisma.productOptionValue.createMany({
+      data: [
+        {
+          optionId: roseHotColdOption1.id,
+          name: "Hot/Warm",
+          priceModifier: 0,
+          isDefault: true,
+          sortOrder: 1,
+        },
+        {
+          optionId: roseHotColdOption1.id,
+          name: "Hot with Salted Cream top",
+          priceModifier: 0.50,
+          isDefault: false,
+          sortOrder: 2,
+        },
+        {
+          optionId: roseHotColdOption1.id,
+          name: "Cold",
+          priceModifier: 0,
+          isDefault: false,
+          sortOrder: 3,
+        },
+        {
+          optionId: roseHotColdOption1.id,
+          name: "Cold with Salted Cream top",
+          priceModifier: 0.50,
+          isDefault: false,
+          sortOrder: 4,
+        }
+      ]
+    });
+
+    console.log(`✓ Created options for ${roseDrinkProduct.name}`);
+  }
+
+  // Create general caffeine choice option for coffee products
+  if (caffeineProduct) {
+    const chooseCaffeineOption = await prisma.productOption.create({
+      data: {
+        productId: caffeineProduct.id,
+        name: "Choose caffeine",
+        description: "Select your preferred coffee style",
+        type: "RADIO",
+        isRequired: true,
+        sortOrder: 1,
+      },
+    });
+
+    await prisma.productOptionValue.createMany({
+      data: [
+        {
+          optionId: chooseCaffeineOption.id,
+          name: "Salted Caramel Latte",
+          priceModifier: 0,
+          isDefault: true,
+          sortOrder: 1,
+        },
+        {
+          optionId: chooseCaffeineOption.id,
+          name: "Salted Cream Coffee",
+          priceModifier: 0,
+          isDefault: false,
+          sortOrder: 2,
+        }
+      ]
+    });
+
+    // Choose the snack option
+    const chooseSnackOption = await prisma.productOption.create({
+      data: {
+        productId: caffeineProduct.id,
+        name: "Choose the snack",
+        description: "Select a dessert to pair with your drink",
+        type: "RADIO",
+        isRequired: false,
+        sortOrder: 2,
+      },
+    });
+
+    await prisma.productOptionValue.createMany({
+      data: [
+        {
+          optionId: chooseSnackOption.id,
+          name: "Traditional Tiramisu",
+          priceModifier: 0,
+          isDefault: true,
+          sortOrder: 1,
+        },
+        {
+          optionId: chooseSnackOption.id,
+          name: "Pistachio Tiramisu",
+          priceModifier: 0,
+          isDefault: false,
+          sortOrder: 2,
+        },
+        {
+          optionId: chooseSnackOption.id,
+          name: "Red Velvet Cheese Roll",
+          priceModifier: 0,
+          isDefault: false,
+          sortOrder: 3,
+        },
+        {
+          optionId: chooseSnackOption.id,
+          name: "Pistachio Croissant",
+          priceModifier: 0,
+          isDefault: false,
+          sortOrder: 4,
+        }
+      ]
+    });
+
+    console.log(`✓ Created caffeine and snack options for ${caffeineProduct.name}`);
+  }
+
   console.log(`\n🎉 Bonbon Coffee seeding completed!`);
   console.log(`✓ Created ${successCount} products`);
   console.log(`✓ Updated ${updatedCount} products with images`);
