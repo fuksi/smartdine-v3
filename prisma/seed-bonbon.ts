@@ -627,6 +627,24 @@ async function seedBonbonCoffee() {
     console.log("✓ Admin user already exists:", existingAdmin.email);
   }
 
+  // Create local test admin user bonbon@outlook.com
+  const existingLocalAdmin = await prisma.adminUser.findUnique({
+    where: { email: "bonbon@outlook.com" },
+  });
+
+  if (!existingLocalAdmin) {
+    const newLocalAdmin = await prisma.adminUser.create({
+      data: {
+        email: "bonbon@outlook.com",
+        locationId: location.id,
+        isActive: true,
+      },
+    });
+    console.log("✓ Created local test admin user:", newLocalAdmin.email);
+  } else {
+    console.log("✓ Local test admin user already exists:", existingLocalAdmin.email);
+  }
+
   // Create menu
   let menu = await prisma.menu.findFirst({
     where: { locationId: location.id },
@@ -999,30 +1017,27 @@ async function seedBonbonCoffee() {
 
   // Create product options for coffee customization
   console.log("\n📋 Creating product options...");
-  
+
   // First, let's find some specific products that need options
   const matchaDrinkProduct = await prisma.product.findFirst({
     where: {
       category: { menuId: menu.id },
-      name: { contains: "Matcha" }
-    }
+      name: { contains: "Matcha" },
+    },
   });
 
   const roseDrinkProduct = await prisma.product.findFirst({
     where: {
       category: { menuId: menu.id },
-      name: { contains: "Rose" }
-    }
+      name: { contains: "Rose" },
+    },
   });
 
   const caffeineProduct = await prisma.product.findFirst({
     where: {
       category: { menuId: menu.id },
-      OR: [
-        { name: { contains: "Latte" } },
-        { name: { contains: "Coffee" } }
-      ]
-    }
+      OR: [{ name: { contains: "Latte" } }, { name: { contains: "Coffee" } }],
+    },
   });
 
   // Create options for Matcha drinks
@@ -1051,11 +1066,11 @@ async function seedBonbonCoffee() {
         {
           optionId: matchaSelectionOption.id,
           name: "Strawberry Matcha",
-          priceModifier: 0.30,
+          priceModifier: 0.3,
           isDefault: false,
           sortOrder: 2,
-        }
-      ]
+        },
+      ],
     });
 
     // Milk option for Matcha
@@ -1085,8 +1100,8 @@ async function seedBonbonCoffee() {
           priceModifier: 0,
           isDefault: false,
           sortOrder: 2,
-        }
-      ]
+        },
+      ],
     });
 
     console.log(`✓ Created options for ${matchaDrinkProduct.name}`);
@@ -1121,8 +1136,8 @@ async function seedBonbonCoffee() {
           priceModifier: 0,
           isDefault: false,
           sortOrder: 2,
-        }
-      ]
+        },
+      ],
     });
 
     // Rose Drink 1: Caffeine option
@@ -1152,8 +1167,8 @@ async function seedBonbonCoffee() {
           priceModifier: 0,
           isDefault: false,
           sortOrder: 2,
-        }
-      ]
+        },
+      ],
     });
 
     // Rose Drink 1: Hot or Cold
@@ -1180,7 +1195,7 @@ async function seedBonbonCoffee() {
         {
           optionId: roseHotColdOption1.id,
           name: "Hot with Salted Cream top",
-          priceModifier: 0.50,
+          priceModifier: 0.5,
           isDefault: false,
           sortOrder: 2,
         },
@@ -1194,11 +1209,11 @@ async function seedBonbonCoffee() {
         {
           optionId: roseHotColdOption1.id,
           name: "Cold with Salted Cream top",
-          priceModifier: 0.50,
+          priceModifier: 0.5,
           isDefault: false,
           sortOrder: 4,
-        }
-      ]
+        },
+      ],
     });
 
     console.log(`✓ Created options for ${roseDrinkProduct.name}`);
@@ -1232,8 +1247,8 @@ async function seedBonbonCoffee() {
           priceModifier: 0,
           isDefault: false,
           sortOrder: 2,
-        }
-      ]
+        },
+      ],
     });
 
     // Choose the snack option
@@ -1277,11 +1292,13 @@ async function seedBonbonCoffee() {
           priceModifier: 0,
           isDefault: false,
           sortOrder: 4,
-        }
-      ]
+        },
+      ],
     });
 
-    console.log(`✓ Created caffeine and snack options for ${caffeineProduct.name}`);
+    console.log(
+      `✓ Created caffeine and snack options for ${caffeineProduct.name}`
+    );
   }
 
   console.log(`\n🎉 Bonbon Coffee seeding completed!`);
