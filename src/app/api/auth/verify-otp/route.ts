@@ -8,7 +8,7 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    const { phone, otp, firstName, lastName, email } = await request.json();
+    const { phone, otp, firstName, email } = await request.json();
 
     if (!phone || !otp) {
       return NextResponse.json(
@@ -58,12 +58,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      customer = await createCustomer(
-        normalizedPhone,
-        firstName,
-        lastName,
-        email
-      );
+      customer = await createCustomer(normalizedPhone, firstName, email);
     }
 
     // Create session

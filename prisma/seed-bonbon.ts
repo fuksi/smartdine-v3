@@ -645,7 +645,184 @@ async function seedBonbonCoffee() {
     console.log("✓ Menu already exists:", menu.name);
   }
 
-  // Create single category for all products
+  // Create proper categories for Bonbon Coffee
+  const categories = [
+    {
+      name: "Classics",
+      description: "Classic coffee drinks and espresso-based beverages",
+      sortOrder: 1,
+      canShip: false,
+    },
+    {
+      name: "Bonbon's Specials",
+      description: "Specialty drinks and unique coffee creations",
+      sortOrder: 2,
+      canShip: false,
+    },
+    {
+      name: "Snacks",
+      description: "Light bites and snack items",
+      sortOrder: 3,
+      canShip: true,
+    },
+    {
+      name: "Bakes",
+      description: "Fresh baked goods and desserts",
+      sortOrder: 4,
+      canShip: true,
+    },
+    {
+      name: "Daily Deals",
+      description: "Special combo deals and packages",
+      sortOrder: 5,
+      canShip: true,
+    },
+    {
+      name: "Bottled Drinks",
+      description: "Ready-to-drink bottled beverages",
+      sortOrder: 6,
+      canShip: true,
+    },
+    {
+      name: "Meet the Beans",
+      description: "Premium coffee beans for home brewing",
+      sortOrder: 7,
+      canShip: true,
+    },
+  ];
+
+  const createdCategories: Record<string, { id: string; name: string }> = {};
+
+  // Create all categories first
+  for (const categoryData of categories) {
+    let category = await prisma.category.findFirst({
+      where: { menuId: menu.id, name: categoryData.name },
+    });
+
+    if (!category) {
+      category = await prisma.category.create({
+        data: {
+          menuId: menu.id,
+          name: categoryData.name,
+          description: categoryData.description,
+          sortOrder: categoryData.sortOrder,
+          canShip: categoryData.canShip,
+          isActive: true,
+        },
+      });
+      console.log(`✓ Created category: ${category.name}`);
+    } else {
+      console.log(`✓ Category already exists: ${category.name}`);
+    }
+
+    createdCategories[categoryData.name] = category;
+  }
+
+  // Function to determine category based on product name
+  const getCategoryForProduct = (productName: string) => {
+    const name = productName.toLowerCase();
+
+    // Meet the Beans - Coffee beans
+    if (name.includes("beans") || name.includes("tasting set")) {
+      return "Meet the Beans";
+    }
+
+    // Bottled Drinks
+    if (name.includes("bottled")) {
+      return "Bottled Drinks";
+    }
+
+    // Daily Deals - Combo items
+    if (
+      name.includes("combo") ||
+      name.includes("box") ||
+      name.includes("anything works")
+    ) {
+      return "Daily Deals";
+    }
+
+    // Snacks - Small food items
+    if (
+      name.includes("sesame roll") ||
+      name.includes("espresso burnt") ||
+      name.includes("cinnamon roll") ||
+      name.includes("apple pie") ||
+      name.includes("espresso cheesecake") ||
+      name.includes("croissant egg") ||
+      name.includes("pumpkin almond") ||
+      name.includes("red velvet")
+    ) {
+      return "Snacks";
+    }
+
+    // Bakes - Baked goods and desserts (but not tiramisu lattes)
+    if (
+      (name.includes("cake") ||
+        name.includes("roll") ||
+        name.includes("cheesecake") ||
+        name.includes("tiramisu") ||
+        name.includes("mousse") ||
+        name.includes("croissant") ||
+        name.includes("muffin") ||
+        name.includes("brownie") ||
+        name.includes("almond") ||
+        name.includes("pistachio") ||
+        name.includes("traditional") ||
+        name.includes("chocolate cheese") ||
+        name.includes("strawberry cake") ||
+        name.includes("vanilla burnt") ||
+        name.includes("matcha burnt") ||
+        name.includes("matcha cheese") ||
+        name.includes("earl grey") ||
+        name.includes("lemon") ||
+        name.includes("butter") ||
+        name.includes("kardemummapulla")) &&
+      !name.includes("latte")
+    ) {
+      // Exclude lattes
+      return "Bakes";
+    }
+
+    // Bonbon's Specials - Specialty drinks with unique names
+    if (
+      name.includes("salted cream") ||
+      name.includes("matcha latte") ||
+      name.includes("pistachio") ||
+      name.includes("strawberry") ||
+      name.includes("caramel") ||
+      name.includes("bonbon coffee") ||
+      name.includes("ame sunset") ||
+      name.includes("foam") ||
+      name.includes("tiramisu latte")
+    ) {
+      return "Bonbon's Specials";
+    }
+
+    // Classics - Standard coffee drinks
+    if (
+      name.includes("latte") ||
+      name.includes("cappuccino") ||
+      name.includes("americano") ||
+      name.includes("chocolate") ||
+      name.includes("cold brew") ||
+      name.includes("tonic") ||
+      name.includes("lychee") ||
+      name.includes("chai") ||
+      name.includes("ice water") ||
+      name.includes("cutlery") ||
+      name.includes("suosikit") ||
+      name.includes("siesta") ||
+      name.includes("rose latte") ||
+      name.includes("pumpkin spice")
+    ) {
+      return "Classics";
+    }
+
+    // Default category for uncategorized items
+    return "Classics";
+  };
+
+  // Create single category for all products (legacy support)
   let category = await prisma.category.findFirst({
     where: { menuId: menu.id, name: "All Items" },
   });
@@ -656,14 +833,14 @@ async function seedBonbonCoffee() {
         menuId: menu.id,
         name: "All Items",
         description: "Coffee, desserts, and specialty items",
-        sortOrder: 1,
-        isActive: true,
+        sortOrder: 99,
+        isActive: false, // Hide this category
         canShip: true,
       },
     });
-    console.log("✓ Created category:", category.name);
+    console.log("✓ Created legacy category:", category.name);
   } else {
-    console.log("✓ Category already exists");
+    console.log("✓ Legacy category already exists");
   }
 
   // Initialize image uploader
@@ -679,11 +856,22 @@ async function seedBonbonCoffee() {
 
   for (const productData of bonbonProducts) {
     try {
-      // Check if product already exists
+      // Determine the correct category for this product
+      const productCategoryName = getCategoryForProduct(productData.name);
+      const productCategory = createdCategories[productCategoryName];
+
+      if (!productCategory) {
+        console.error(`Category not found for product: ${productData.name}`);
+        continue;
+      }
+
+      // Check if product already exists in any category
       const existingProduct = await prisma.product.findFirst({
         where: {
-          categoryId: category.id,
           name: productData.name,
+          category: {
+            menuId: menu.id,
+          },
         },
       });
 
@@ -718,13 +906,24 @@ async function seedBonbonCoffee() {
       }
 
       if (existingProduct) {
+        // Check if product needs to be moved to correct category
+        const shouldUpdateCategory =
+          existingProduct.categoryId !== productCategory.id;
+
         // Only coffee beans products are shippable (products containing "Beans" or "Tasting Set")
         const isShippable =
-          productData.name.includes("Beans") ||
-          productData.name.includes("Tasting Set");
+          productCategory.name === "Meet the Beans" ||
+          productCategory.name === "Bakes" ||
+          productCategory.name === "Snacks" ||
+          productCategory.name === "Daily Deals" ||
+          productCategory.name === "Bottled Drinks";
 
-        // Update product with image and/or shipping status
-        const updateData: { imageUrl?: string; canShip?: boolean } = {};
+        // Update product with image, shipping status, and category
+        const updateData: {
+          imageUrl?: string;
+          canShip?: boolean;
+          categoryId?: string;
+        } = {};
         let needsUpdate = false;
 
         if (imageUrl && !existingProduct.imageUrl) {
@@ -737,31 +936,41 @@ async function seedBonbonCoffee() {
           needsUpdate = true;
         }
 
+        if (shouldUpdateCategory) {
+          updateData.categoryId = productCategory.id;
+          needsUpdate = true;
+        }
+
         if (needsUpdate) {
           await prisma.product.update({
             where: { id: existingProduct.id },
             data: updateData,
           });
           console.log(
-            `✓ Updated product: ${existingProduct.name} (shippable: ${isShippable})`
+            `✓ Updated product: ${existingProduct.name} -> ${productCategory.name} (shippable: ${isShippable})`
           );
           updatedCount++;
         } else {
-          console.log(`⏭️ Product "${productData.name}" already exists`);
+          console.log(
+            `⏭️ Product "${productData.name}" already exists in correct category`
+          );
           skipCount++;
         }
         continue;
       }
 
       // Create product
-      // Only coffee beans products are shippable (products containing "Beans" or "Tasting Set")
+      // Determine shipping capability based on category
       const isShippable =
-        productData.name.includes("Beans") ||
-        productData.name.includes("Tasting Set");
+        productCategory.name === "Meet the Beans" ||
+        productCategory.name === "Bakes" ||
+        productCategory.name === "Snacks" ||
+        productCategory.name === "Daily Deals" ||
+        productCategory.name === "Bottled Drinks";
 
       const product = await prisma.product.create({
         data: {
-          categoryId: category.id,
+          categoryId: productCategory.id,
           name: productData.name,
           description: productData.description || null,
           price: productData.price,
@@ -773,9 +982,9 @@ async function seedBonbonCoffee() {
       });
 
       console.log(
-        `✓ Created product: ${product.name} (€${product.price})${
-          imageUrl ? " with image" : ""
-        }`
+        `✓ Created product: ${product.name} (€${product.price}) in ${
+          productCategory.name
+        }${imageUrl ? " with image" : ""}`
       );
       successCount++;
 

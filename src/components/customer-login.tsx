@@ -40,11 +40,9 @@ export function CustomerLogin({ onSuccess }: { onSuccess?: () => void }) {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [customerExists, setCustomerExists] = useState(false);
 
   const { login } = useCustomerAuth();
 
@@ -80,7 +78,6 @@ export function CustomerLogin({ onSuccess }: { onSuccess?: () => void }) {
       const data: LoginResponse = await response.json();
 
       if (data.success) {
-        setCustomerExists(data.customerExists);
         setStep(data.customerExists ? "otp" : "signup");
       } else {
         setError(data.message || "Failed to send verification code");
@@ -107,7 +104,7 @@ export function CustomerLogin({ onSuccess }: { onSuccess?: () => void }) {
         body: JSON.stringify({
           phone,
           otp,
-          ...(step === "signup" && { firstName, lastName, email }),
+          ...(step === "signup" && { firstName, email }),
         }),
       });
 
@@ -132,7 +129,6 @@ export function CustomerLogin({ onSuccess }: { onSuccess?: () => void }) {
       setStep("phone");
       setOtp("");
       setFirstName("");
-      setLastName("");
       setEmail("");
       setError("");
     }
@@ -233,28 +229,15 @@ export function CustomerLogin({ onSuccess }: { onSuccess?: () => void }) {
                     className="text-sm font-medium flex items-center gap-2"
                   >
                     <User className="h-4 w-4" />
-                    First Name *
+                    Full Name *
                   </label>
                   <Input
                     id="firstName"
                     type="text"
-                    placeholder="Enter your first name"
+                    placeholder="Enter your full name"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="lastName" className="text-sm font-medium">
-                    Last Name
-                  </label>
-                  <Input
-                    id="lastName"
-                    type="text"
-                    placeholder="Enter your last name (optional)"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
                   />
                 </div>
 

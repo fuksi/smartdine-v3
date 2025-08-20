@@ -89,6 +89,8 @@ export function SMSConfirmationModal({
         body: JSON.stringify({
           phone: phoneNumber,
           otp: otpCode,
+          firstName: customerInfo.name,
+          email: customerInfo.email,
         }),
       });
 

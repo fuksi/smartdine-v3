@@ -413,43 +413,21 @@ export default function CartPage() {
               {/* Customer Information */}
               <div className="space-y-4">
                 <h3 className="font-semibold">Customer Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input
-                    placeholder="First Name"
-                    value={formData.name.split(" ")[0] || ""}
-                    onChange={(e) => {
-                      const lastName = formData.name
-                        .split(" ")
-                        .slice(1)
-                        .join(" ");
-                      setFormData({
-                        ...formData,
-                        name: `${e.target.value} ${lastName}`.trim(),
-                      });
-                    }}
-                    className={
-                      !formData.name.trim()
-                        ? "border-red-200 bg-red-50 focus:border-red-500 focus:ring-red-500"
-                        : ""
-                    }
-                  />
-                  <Input
-                    placeholder="Last Name"
-                    value={formData.name.split(" ").slice(1).join(" ") || ""}
-                    onChange={(e) => {
-                      const firstName = formData.name.split(" ")[0] || "";
-                      setFormData({
-                        ...formData,
-                        name: `${firstName} ${e.target.value}`.trim(),
-                      });
-                    }}
-                    className={
-                      !formData.name.trim()
-                        ? "border-red-200 bg-red-50 focus:border-red-500 focus:ring-red-500"
-                        : ""
-                    }
-                  />
-                </div>
+                <Input
+                  placeholder="Full Name"
+                  value={formData.name}
+                  onChange={(e) => {
+                    setFormData({
+                      ...formData,
+                      name: e.target.value,
+                    });
+                  }}
+                  className={
+                    !formData.name.trim()
+                      ? "border-red-200 bg-red-50 focus:border-red-500 focus:ring-red-500"
+                      : ""
+                  }
+                />
                 <Input
                   type="email"
                   placeholder="Email"

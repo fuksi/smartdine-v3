@@ -163,25 +163,17 @@ export async function findCustomerByPhone(
 export async function createCustomer(
   phone: string,
   firstName?: string,
-  lastName?: string,
   email?: string
-): Promise<Customer> {
+) {
   const normalizedPhone = normalizeFinnishPhone(phone);
 
   const customer = await prisma.customer.create({
     data: {
       phone: normalizedPhone,
       firstName,
-      lastName,
       email,
     },
   });
 
-  return {
-    id: customer.id,
-    phone: customer.phone,
-    firstName: customer.firstName,
-    lastName: customer.lastName,
-    email: customer.email,
-  };
+  return customer;
 }
