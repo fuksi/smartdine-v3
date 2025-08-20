@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import * as Dialog from "@radix-ui/react-dialog";
-import * as RadioGroup from "@radix-ui/react-radio-group";
-import * as Checkbox from "@radix-ui/react-checkbox";
+import { Dialog, DialogContent, DialogClose, DialogHeader, DialogTitle, DialogDescription, DialogBody } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { X, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatEuro, formatEuroModifier } from "@/lib/currency";
