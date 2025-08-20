@@ -46,8 +46,6 @@ interface CartState {
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
   clearCartForMerchant: (merchantId: string) => void;
-  // Backward compatibility
-  clearCartForLocation: (locationId: string) => void;
   setLocation: (
     merchantId: string,
     merchantSlug?: string,
@@ -206,7 +204,6 @@ export const useCartStore = create<CartState>()(
 
       clearCartForMerchant: (merchantId) => {
         set((state) => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [merchantId]: _, ...restCarts } = state.cartsByMerchant;
           return {
             cartsByMerchant: restCarts,
@@ -214,28 +211,89 @@ export const useCartStore = create<CartState>()(
         });
       },
 
-      // Backward compatibility
-      clearCartForLocation: (locationId) => {
-        // For backward compatibility, treat locationId as merchantId
-        const { clearCartForMerchant } = get();
-        clearCartForMerchant(locationId);
-      },
-
       setLocation: (merchantId, merchantSlug, _locationSlug) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const locationSlug = _locationSlug; // For backward compatibility
         set({
           currentMerchantId: merchantId,
           merchantSlug: merchantSlug || null,
         });
       },
+          if (!currentCart) return state;
 
-      setCustomerInfo: (info) => {
-        const { currentMerchantId } = get();
-        if (!currentMerchantId) return;
+          return {
+            cartsByLocation: {
+              ...state.cartsByLocation,
+              [currentLocationId]: {
+                ...currentCart,
+                items: currentCart.items.filter((item) => item.id !== itemId),
+              },
+            },
+          };
+        });
+      },
+
+      updateQuantity: (itemId, quantity) => {
+        const { currentLocationId } = get();
+        if (!currentLocationId) return;
 
         set((state) => {
-          const currentCart = state.cartsByMerchant[currentMerchantId] || {
+          const currentCart = state.cartsByLocation[currentLocationId];
+          if (!currentCart) return state;
+
+          return {
+            cartsByLocation: {
+              ...state.cartsByLocation,
+              [currentLocationId]: {
+                ...currentCart,
+                items: currentCart.items
+                  .map((item) =>
+                    item.id === itemId ? { ...item, quantity } : item
+                  )
+                  .filter((item) => item.quantity > 0),
+              },
+            },
+          };
+        });
+      },
+
+      clearCart: () => {
+        const { currentLocationId } = get();
+        if (!currentLocationId) return;
+
+        set((state) => {
+          const newCartsByLocation = { ...state.cartsByLocation };
+          delete newCartsByLocation[currentLocationId];
+
+          return {
+            cartsByLocation: newCartsByLocation,
+          };
+        });
+      },
+
+      clearCartForLocation: (locationId) => {
+        set((state) => {
+          const newCartsByLocation = { ...state.cartsByLocation };
+          delete newCartsByLocation[locationId];
+
+          return {
+            cartsByLocation: newCartsByLocation,
+          };
+        });
+      },
+
+      setLocation: (locationId, merchantSlug, locationSlug) => {
+        set({
+          currentLocationId: locationId,
+          merchantSlug,
+          locationSlug,
+        });
+      },
+
+      setCustomerInfo: (info) => {
+        const { currentLocationId } = get();
+        if (!currentLocationId) return;
+
+        set((state) => {
+          const currentCart = state.cartsByLocation[currentLocationId] || {
             items: [],
             fulfilmentType: "PICKUP" as const,
             customerInfo: null,
@@ -243,9 +301,9 @@ export const useCartStore = create<CartState>()(
           };
 
           return {
-            cartsByMerchant: {
-              ...state.cartsByMerchant,
-              [currentMerchantId]: {
+            cartsByLocation: {
+              ...state.cartsByLocation,
+              [currentLocationId]: {
                 ...currentCart,
                 customerInfo: info,
               },
@@ -255,11 +313,11 @@ export const useCartStore = create<CartState>()(
       },
 
       setFulfilmentType: (type) => {
-        const { currentMerchantId } = get();
-        if (!currentMerchantId) return;
+        const { currentLocationId } = get();
+        if (!currentLocationId) return;
 
         set((state) => {
-          const currentCart = state.cartsByMerchant[currentMerchantId] || {
+          const currentCart = state.cartsByLocation[currentLocationId] || {
             items: [],
             fulfilmentType: "PICKUP" as const,
             customerInfo: null,
@@ -267,9 +325,9 @@ export const useCartStore = create<CartState>()(
           };
 
           return {
-            cartsByMerchant: {
-              ...state.cartsByMerchant,
-              [currentMerchantId]: {
+            cartsByLocation: {
+              ...state.cartsByLocation,
+              [currentLocationId]: {
                 ...currentCart,
                 fulfilmentType: type,
               },
@@ -279,11 +337,11 @@ export const useCartStore = create<CartState>()(
       },
 
       setShippingAddress: (address) => {
-        const { currentMerchantId } = get();
-        if (!currentMerchantId) return;
+        const { currentLocationId } = get();
+        if (!currentLocationId) return;
 
         set((state) => {
-          const currentCart = state.cartsByMerchant[currentMerchantId] || {
+          const currentCart = state.cartsByLocation[currentLocationId] || {
             items: [],
             fulfilmentType: "PICKUP" as const,
             customerInfo: null,
@@ -291,9 +349,9 @@ export const useCartStore = create<CartState>()(
           };
 
           return {
-            cartsByMerchant: {
-              ...state.cartsByMerchant,
-              [currentMerchantId]: {
+            cartsByLocation: {
+              ...state.cartsByLocation,
+              [currentLocationId]: {
                 ...currentCart,
                 shippingAddress: address,
               },
@@ -303,30 +361,55 @@ export const useCartStore = create<CartState>()(
       },
 
       canAllItemsBeShipped: () => {
-        const items = getCurrentItems(get());
-        return canItemsBeShipped(items);
+        const { currentLocationId, cartsByLocation } = get();
+        if (!currentLocationId) return false;
+        const currentCart = cartsByLocation[currentLocationId];
+        if (!currentCart) return false;
+        return canItemsBeShipped(currentCart.items);
       },
 
       getTotalPrice: () => {
-        const items = getCurrentItems(get());
-        return items.reduce((total, item) => {
-          const basePrice = item.price * item.quantity;
+        const { currentLocationId, cartsByLocation } = get();
+        if (!currentLocationId) return 0;
+        const currentCart = cartsByLocation[currentLocationId];
+        if (!currentCart) return 0;
+
+        return currentCart.items.reduce((total, item) => {
           const optionsPrice = item.options.reduce(
-            (sum, option) => sum + option.priceModifier * item.quantity,
+            (sum, option) => sum + option.priceModifier,
             0
           );
-          return total + basePrice + optionsPrice;
+          return total + (item.price + optionsPrice) * item.quantity;
         }, 0);
       },
 
       getTotalItems: () => {
-        const items = getCurrentItems(get());
-        return items.reduce((total, item) => total + item.quantity, 0);
+        const { currentLocationId, cartsByLocation } = get();
+        if (!currentLocationId) return 0;
+        const currentCart = cartsByLocation[currentLocationId];
+        if (!currentCart) return 0;
+
+        return currentCart.items.reduce(
+          (total, item) => total + item.quantity,
+          0
+        );
       },
 
       getShippingCost: () => {
-        const { getTotalPrice } = get();
-        return calculateShippingCost(getTotalPrice());
+        const { currentLocationId, cartsByLocation } = get();
+        if (!currentLocationId) return 0;
+        const currentCart = cartsByLocation[currentLocationId];
+        if (!currentCart || currentCart.fulfilmentType !== "SHIPPING") return 0;
+
+        const subtotal = currentCart.items.reduce((total, item) => {
+          const optionsPrice = item.options.reduce(
+            (sum, option) => sum + option.priceModifier,
+            0
+          );
+          return total + (item.price + optionsPrice) * item.quantity;
+        }, 0);
+
+        return calculateShippingCost(subtotal);
       },
 
       getTotalWithShipping: () => {
@@ -335,12 +418,7 @@ export const useCartStore = create<CartState>()(
       },
     }),
     {
-      name: "smartdine-cart",
-      partialize: (state) => ({
-        cartsByMerchant: state.cartsByMerchant,
-        currentMerchantId: state.currentMerchantId,
-        merchantSlug: state.merchantSlug,
-      }),
+      name: "cart-storage",
     }
   )
 );

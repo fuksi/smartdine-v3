@@ -13,18 +13,16 @@ import { useCartStore } from "@/lib/store/cart";
 
 interface ProductModalProps {
   product: SerializedProduct;
-  locationId: string;
+  merchantId: string;
   merchantSlug: string;
-  locationSlug: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export function ProductModal({
   product,
-  locationId,
+  merchantId,
   merchantSlug,
-  locationSlug,
   isOpen,
   onClose,
 }: ProductModalProps) {
@@ -142,8 +140,8 @@ export function ProductModal({
       return;
     }
 
-    // Set the location ID in the cart store
-    setLocation(locationId, merchantSlug, locationSlug);
+    // Set the merchant ID in the cart store
+    setLocation(merchantId, merchantSlug, "");
 
     const cartOptions = Object.entries(selectedOptions).flatMap(
       ([optionId, valueIds]) => {

@@ -18,16 +18,14 @@ import { ProductModal } from "./product-modal";
 
 interface ProductCardProps {
   product: SerializedProduct;
-  locationId: string;
+  merchantId: string;
   merchantSlug: string;
-  locationSlug: string;
 }
 
 export function ProductCard({
   product,
-  locationId,
+  merchantId,
   merchantSlug,
-  locationSlug,
 }: ProductCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const pathname = usePathname();
@@ -92,9 +90,8 @@ export function ProductCard({
 
       <ProductModal
         product={product}
-        locationId={locationId}
+        merchantId={merchantId}
         merchantSlug={merchantSlug}
-        locationSlug={locationSlug}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />

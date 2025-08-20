@@ -1,6 +1,5 @@
 import {
   Merchant,
-  MerchantLocation,
   Menu,
   Category,
   Product,
@@ -12,12 +11,7 @@ import {
   PaymentStatus,
 } from "@prisma/client";
 
-export type MerchantWithLocations = Merchant & {
-  locations: MerchantLocation[];
-};
-
-export type LocationWithMenu = MerchantLocation & {
-  merchant: Merchant;
+export type MerchantWithMenu = Merchant & {
   menu?: MenuWithCategories;
 };
 
@@ -39,9 +33,7 @@ export type ProductOptionWithValues = ProductOption & {
 
 export type OrderWithItems = Order & {
   items: OrderItemWithDetails[];
-  location: MerchantLocation & {
-    merchant: Merchant;
-  };
+  merchant: Merchant;
 };
 
 export type OrderItemWithDetails = OrderItem & {

@@ -15,29 +15,24 @@ interface Category {
   products: SerializedProduct[];
 }
 
-interface Location {
+interface Merchant {
   id: string;
   name: string;
   address: string;
   phone: string | null;
-  merchant: {
-    name: string;
-  };
   menu: {
     categories: Category[];
   };
 }
 
 interface RestaurantPageProps {
-  location: Location;
+  merchant: Merchant;
   merchantSlug: string;
-  locationSlug: string;
 }
 
 export function RestaurantPage({
-  location,
+  merchant,
   merchantSlug,
-  locationSlug,
 }: RestaurantPageProps) {
   const [activeCategory, setActiveCategory] = useState<string>("");
   const [showStickyNav, setShowStickyNav] = useState(false);
@@ -48,13 +43,13 @@ export function RestaurantPage({
 
   const { setLocation } = useCartStore();
 
-  // Set current location in cart store when component mounts
+  // Set current merchant in cart store when component mounts
   useEffect(() => {
-    setLocation(location.id, merchantSlug, locationSlug);
-  }, [location.id, merchantSlug, locationSlug, setLocation]);
+    setLocation(merchant.id, merchantSlug, "");
+  }, [merchant.id, merchantSlug, setLocation]);
 
   // Filter products based on search query
-  const filteredCategories = location.menu.categories
+  const filteredCategories = merchant.menu.categories
     .map((category) => ({
       ...category,
       products: category.products.filter(
@@ -118,23 +113,23 @@ export function RestaurantPage({
   };
 
   return (
-    <RestaurantProvider restaurantName={location.merchant.name}>
+    <RestaurantProvider restaurantName={merchant.name}>
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8 pb-24 md:pb-8 md:pt-24">
           {/* Header */}
           <div ref={headerRef} className="mb-8">
             <h1 className="text-3xl font-bold mb-2 hidden md:block">
-              {location.merchant.name} - {location.name}
+              {merchant.name}
             </h1>
             <h1 className="text-2xl font-bold mb-2 md:hidden">
-              {location.merchant.name}
+              {merchant.name}
             </h1>
             <p className="text-muted-foreground hidden md:block">
-              {location.address}
+              {merchant.address}
             </p>
-            {location.phone && (
+            {merchant.phone && (
               <p className="text-muted-foreground hidden md:block">
-                {location.phone}
+                {merchant.phone}
               </p>
             )}
 
@@ -143,7 +138,7 @@ export function RestaurantPage({
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-3 w-3" />
               <Input
                 type="text"
-                placeholder={`Search in ${location.merchant.name}`}
+                placeholder={`Search in ${merchant.name}`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-white shadow-sm border-0 rounded-full"
@@ -162,7 +157,7 @@ export function RestaurantPage({
           >
             <div className="container mx-auto px-4">
               <div className="flex space-x-2 py-3 overflow-x-auto scrollbar-hide">
-                {location.menu.categories.map((category) => {
+                {merchant.menu.categories.map((category) => {
                   const hasProducts = filteredCategories.find(
                     (c) => c.id === category.id
                   );
@@ -213,9 +208,8 @@ export function RestaurantPage({
                       <ProductCard
                         key={product.id}
                         product={product}
-                        locationId={location.id}
+                        merchantId={merchant.id}
                         merchantSlug={merchantSlug}
-                        locationSlug={locationSlug}
                       />
                     ))}
                   </div>

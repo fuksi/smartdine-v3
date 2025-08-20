@@ -8,25 +8,11 @@ datasource db {
 }
 
 model Merchant {
-  id          String             @id @default(uuid())
-  name        String
-  slug        String             @unique
-  description String?
-  logoUrl     String?
-  isActive    Boolean            @default(true)
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  adminUsers  AdminUser[]
-  locations   MerchantLocation[]
-
-  @@map("merchants")
-}
-
-model MerchantLocation {
   id                     String        @id @default(uuid())
-  merchantId             String
   name                   String
-  slug                   String
+  slug                   String        @unique
+  description            String?
+  logoUrl                String?
   address                String
   phone                  String?
   email                  String?
@@ -38,24 +24,22 @@ model MerchantLocation {
   stripeConnectSetupAt   DateTime?
   adminUsers             AdminUser[]
   menu                   Menu?
-  merchant               Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   openingHours           OpeningHour[]
   orders                 Order[]
   stampCards             StampCard[]
 
-  @@unique([merchantId, slug])
-  @@map("merchant_locations")
+  @@map("merchants")
 }
 
 model Menu {
-  id         String           @id @default(uuid())
-  locationId String           @unique
-  name       String           @default("Menu")
-  isActive   Boolean          @default(true)
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
+  id         String     @id @default(uuid())
+  merchantId String     @unique
+  name       String     @default("Menu")
+  isActive   Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
   categories Category[]
-  location   MerchantLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  merchant   Merchant   @relation(fields: [merchantId], references: [id], onDelete: Cascade)
 
   @@map("menus")
 }
@@ -128,16 +112,16 @@ model ProductOptionValue {
 }
 
 model Order {
-  id                      String           @id @default(uuid())
-  displayId               Int              @unique
-  locationId              String
+  id                      String        @id @default(uuid())
+  displayId               Int           @unique
+  merchantId              String
   customerId              String?
   customerName            String
   customerPhone           String
   customerEmail           String?
   totalAmount             Decimal
-  status                  OrderStatus      @default(PLACED)
-  fulfilmentType          String           @default("PICKUP")
+  status                  OrderStatus   @default(PLACED)
+  fulfilmentType          String        @default("PICKUP")
   estimatedPickupTime     DateTime?
   pickupTime              DateTime?
   deliveryAddress         String?
@@ -145,17 +129,17 @@ model Order {
   deliveryCity            String?
   shippingCost            Decimal?
   notes                   String?
-  createdAt               DateTime         @default(now())
-  updatedAt               DateTime         @updatedAt
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
   stripePaymentIntentId   String?
   stripeCheckoutSessionId String?
-  paymentStatus           PaymentStatus    @default(PENDING)
+  paymentStatus           PaymentStatus @default(PENDING)
   paymentAmount           Decimal?
   paymentCapturedAmount   Decimal?
   paymentCapturedAt       DateTime?
   items                   OrderItem[]
-  customer                Customer?        @relation(fields: [customerId], references: [id])
-  location                MerchantLocation @relation(fields: [locationId], references: [id])
+  customer                Customer?     @relation(fields: [customerId], references: [id])
+  merchant                Merchant      @relation(fields: [merchantId], references: [id])
 
   @@map("orders")
 }
@@ -191,14 +175,12 @@ model OrderItemOption {
 model AdminUser {
   id         String            @id @default(uuid())
   email      String            @unique
-  locationId String?
   merchantId String?
-  role       AdminRole         @default(LOCATION_ADMIN)
+  role       AdminRole         @default(MERCHANT_ADMIN)
   isActive   Boolean           @default(true)
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
   sessions   AdminSession[]
-  location   MerchantLocation? @relation(fields: [locationId], references: [id])
   merchant   Merchant?         @relation(fields: [merchantId], references: [id])
 
   @@map("admin_users")
@@ -216,33 +198,33 @@ model AdminSession {
 }
 
 model OpeningHour {
-  id         String           @id @default(uuid())
-  locationId String
+  id         String   @id @default(uuid())
+  merchantId String
   dayOfWeek  Int
-  isOpen     Boolean          @default(true)
+  isOpen     Boolean  @default(true)
   openTime   String?
   closeTime  String?
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
-  location   MerchantLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
 
-  @@unique([locationId, dayOfWeek])
+  @@unique([merchantId, dayOfWeek])
   @@map("opening_hours")
 }
 
 model StampCard {
-  id             String           @id @default(uuid())
-  locationId     String
+  id             String   @id @default(uuid())
+  merchantId     String
   phoneNumber    String
   firstName      String
-  stampsRequired Int              @default(10)
-  isDeleted      Boolean          @default(false)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  location       MerchantLocation @relation(fields: [locationId], references: [id])
+  stampsRequired Int      @default(10)
+  isDeleted      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  merchant       Merchant @relation(fields: [merchantId], references: [id])
   stamps         Stamp[]
 
-  @@unique([locationId, phoneNumber])
+  @@unique([merchantId, phoneNumber])
   @@map("stamp_cards")
 }
 
@@ -342,8 +324,8 @@ enum ProductOptionType {
 }
 
 enum AdminRole {
-  LOCATION_ADMIN
   MERCHANT_ADMIN
+  SUPER_ADMIN
 
   @@map("admin_role")
 }

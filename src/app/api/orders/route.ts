@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const {
-      locationId,
+      merchantId,
       customerName,
       customerPhone,
       customerEmail,
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (
-      !locationId ||
+      !merchantId ||
       !customerName ||
       !customerPhone ||
       !items ||
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     // Create the order
     const order = await prisma.order.create({
       data: {
-        locationId,
+        merchantId,
         customerName,
         customerPhone,
         customerEmail: customerEmail || null,
