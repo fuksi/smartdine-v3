@@ -642,7 +642,10 @@ async function seedBonbonCoffee() {
     });
     console.log("✓ Created local test admin user:", newLocalAdmin.email);
   } else {
-    console.log("✓ Local test admin user already exists:", existingLocalAdmin.email);
+    console.log(
+      "✓ Local test admin user already exists:",
+      existingLocalAdmin.email
+    );
   }
 
   // Create menu

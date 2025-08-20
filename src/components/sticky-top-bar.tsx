@@ -15,8 +15,8 @@ export function StickyTopBar() {
   const totalItems = getTotalItems();
   const totalPrice = getTotalPrice();
 
-  // Hide on cart page
-  if (pathname === "/cart") {
+  // Hide on admin pages and cart page
+  if (pathname === "/cart" || pathname.startsWith("/admin")) {
     return null;
   }
 

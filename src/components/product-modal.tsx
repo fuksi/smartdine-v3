@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Plus, Minus, AlertCircle, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,8 @@ export function ProductModal({
     new Set()
   );
   const { addItem, setLocation } = useCartStore();
+  const pathname = usePathname();
+  const isAdminPage = pathname.startsWith("/admin");
 
   // Auto-select default options when modal opens
   useEffect(() => {
@@ -407,16 +410,18 @@ export function ProductModal({
                   </Button>
                 </div>
 
-                {/* Add to Cart Button */}
-                <Button
-                  onClick={handleAddToCart}
-                  disabled={!canAddToCart()}
-                  variant="secondary"
-                  size="lg"
-                  className="flex-1 min-w-0 text-lg font-bold py-3"
-                >
-                  Add to order - €{calculateTotalPrice().toFixed(2)}
-                </Button>
+                {/* Add to Cart Button - Hidden on admin pages */}
+                {!isAdminPage && (
+                  <Button
+                    onClick={handleAddToCart}
+                    disabled={!canAddToCart()}
+                    variant="secondary"
+                    size="lg"
+                    className="flex-1 min-w-0 text-lg font-bold py-3"
+                  >
+                    Add to order - €{calculateTotalPrice().toFixed(2)}
+                  </Button>
+                )}
               </div>
             </div>
           </div>

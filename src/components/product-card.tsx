@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -29,6 +30,8 @@ export function ProductCard({
   locationSlug,
 }: ProductCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const pathname = usePathname();
+  const isAdminPage = pathname.startsWith("/admin");
 
   return (
     <>
@@ -71,15 +74,17 @@ export function ProductCard({
                   Shippable
                 </Badge>
               )}
-              <Button
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsModalOpen(true);
-                }}
-              >
-                Add to Cart
-              </Button>
+              {!isAdminPage && (
+                <Button
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsModalOpen(true);
+                  }}
+                >
+                  Add to Cart
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>
