@@ -13,7 +13,11 @@ export function MobileCartButton() {
   const totalPrice = getTotalPrice();
 
   // Hide cart button on admin pages, cart page and when cart is empty
-  if (totalItems === 0 || pathname === "/cart" || pathname.startsWith("/admin")) {
+  if (
+    totalItems === 0 ||
+    pathname === "/cart" ||
+    pathname.startsWith("/admin")
+  ) {
     return null;
   }
 
