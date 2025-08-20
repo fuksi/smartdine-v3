@@ -8,7 +8,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, description, sortOrder, isActive } = body;
+    const { name, description, sortOrder, isActive, canShip } = body;
 
     const category = await prisma.category.update({
       where: { id },
@@ -17,6 +17,7 @@ export async function PATCH(
         ...(description !== undefined && { description }),
         ...(sortOrder !== undefined && { sortOrder }),
         ...(isActive !== undefined && { isActive }),
+        ...(canShip !== undefined && { canShip }),
       },
     });
 

@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
       console.log(`\n🚚 Adding shipping line item:`);
       console.log(`   Shipping cost: €${Number(order.shippingCost)}`);
       console.log(`   Shipping cost in cents: ${shippingCostInCents}`);
-      
+
       lineItems.push({
         name: "Shipping",
         quantity: 1,

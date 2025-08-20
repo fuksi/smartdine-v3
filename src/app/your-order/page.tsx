@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDisplayId } from "@/lib/order-utils";
+import { useCartStore } from "@/lib/store/cart";
 import {
   Clock,
   CheckCircle,
@@ -53,6 +54,7 @@ interface Order {
   fulfilmentType: string;
   estimatedPickupTime?: string;
   createdAt: string;
+  locationId: string;
   items: OrderItem[];
   location: {
     name: string;
@@ -108,9 +110,12 @@ export default function YourOrderPage() {
   const router = useRouter();
   const orderId = searchParams.get("id");
 
+  const { clearCartForLocation } = useCartStore();
+
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cartCleared, setCartCleared] = useState(false);
 
   useEffect(() => {
     if (!orderId) {
@@ -127,6 +132,13 @@ export default function YourOrderPage() {
         }
         const data = await response.json();
         setOrder(data.order);
+
+        // Clear cart for this location after successful order fetch
+        // This indicates the order was successfully placed and paid for
+        if (data.order && data.order.locationId && !cartCleared) {
+          clearCartForLocation(data.order.locationId);
+          setCartCleared(true);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load order");
       } finally {
@@ -140,7 +152,7 @@ export default function YourOrderPage() {
     const interval = setInterval(fetchOrder, 30000);
 
     return () => clearInterval(interval);
-  }, [orderId]);
+  }, [orderId, clearCartForLocation, cartCleared]);
 
   if (loading) {
     return (

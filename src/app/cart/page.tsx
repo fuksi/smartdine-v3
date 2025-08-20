@@ -7,19 +7,30 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Minus, Plus, Trash2, ArrowLeft, Truck, MapPin } from "lucide-react";
-import { useCartStore } from "@/lib/store/cart";
+import {
+  Minus,
+  Plus,
+  Trash2,
+  ArrowLeft,
+  Truck,
+  MapPin,
+  CreditCard,
+  Banknote,
+} from "lucide-react";
+import { formatEuro, formatEuroModifier } from "@/lib/currency";
+import {
+  useCartStore,
+  getCurrentItems,
+  getCurrentFulfilmentType,
+  getCurrentCustomerInfo,
+  getCurrentShippingAddress,
+} from "@/lib/store/cart";
 import { validateShippingAddress } from "@/lib/shipping";
+import { SMSConfirmationModal } from "@/components/sms-confirmation-modal";
 
 export default function CartPage() {
+  const store = useCartStore();
   const {
-    items,
-    customerInfo,
-    locationId,
-    merchantSlug,
-    locationSlug,
-    fulfilmentType,
-    shippingAddress,
     updateQuantity,
     removeItem,
     clearCart,
@@ -31,7 +42,16 @@ export default function CartPage() {
     getTotalItems,
     getShippingCost,
     getTotalWithShipping,
-  } = useCartStore();
+    merchantSlug,
+    locationSlug,
+  } = store;
+
+  // Get current cart data using selectors
+  const items = getCurrentItems(store);
+  const customerInfo = getCurrentCustomerInfo(store);
+  const fulfilmentType = getCurrentFulfilmentType(store);
+  const shippingAddress = getCurrentShippingAddress(store);
+  const locationId = store.currentLocationId;
 
   const [formData, setFormData] = useState({
     name:
@@ -59,6 +79,13 @@ export default function CartPage() {
     // Initialize as valid if there's already a phone number (development)
     formData.phone.trim().length > 0
   );
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "payAtShop">(
+    "card"
+  );
+  const [showSMSModal, setShowSMSModal] = useState(false);
+
+  // Check if this is Bonbon Coffee
+  const isBonbonCoffee = merchantSlug === "bonbon-coffee";
 
   // Email validation helper function
   const isValidEmail = (email: string) => {
@@ -70,6 +97,81 @@ export default function CartPage() {
   const handlePhoneChange = (phoneNumber: string, isValid: boolean) => {
     setFormData((prev) => ({ ...prev, phone: phoneNumber }));
     setIsPhoneValid(isValid);
+  };
+
+  // Pay at shop payment handler
+  const handlePayAtShopOrder = async (customerPhone: string) => {
+    if (!locationId) {
+      alert("No location selected. Please go back and select a restaurant.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Calculate totals
+      const shippingCost = getShippingCost();
+      const totalWithShipping = getTotalWithShipping();
+
+      // Prepare pay at shop order data
+      const orderData = {
+        locationId,
+        customerPhone,
+        totalAmount: totalWithShipping,
+        fulfilmentType: fulfilmentType,
+        deliveryAddress:
+          fulfilmentType === "SHIPPING" ? shippingFormData.street.trim() : null,
+        deliveryPostalCode:
+          fulfilmentType === "SHIPPING"
+            ? shippingFormData.postalCode.trim()
+            : null,
+        deliveryCity:
+          fulfilmentType === "SHIPPING" ? shippingFormData.city.trim() : null,
+        shippingCost: fulfilmentType === "SHIPPING" ? shippingCost : null,
+        items: items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          totalPrice:
+            (item.price +
+              item.options.reduce((sum, opt) => sum + opt.priceModifier, 0)) *
+            item.quantity,
+          options: item.options.map((option) => ({
+            optionId: option.optionId,
+            optionValueId: option.valueId,
+          })),
+        })),
+      };
+
+      const response = await fetch("/api/orders/cod", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || "Failed to submit pay at shop order"
+        );
+      }
+
+      const result = await response.json();
+
+      // Redirect to order confirmation page
+      window.location.href = `/your-order?id=${result.order.id}`;
+    } catch (error) {
+      console.error("Error submitting pay at shop order:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to submit order. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSubmitOrder = async () => {
@@ -206,8 +308,7 @@ export default function CartPage() {
         throw new Error(error);
       }
 
-      // Clear cart and redirect to Stripe Checkout
-      clearCart();
+      // Redirect to Stripe Checkout (cart will be cleared after successful payment)
       if (url) {
         window.location.href = url;
       }
@@ -261,94 +362,12 @@ export default function CartPage() {
         Your Cart ({getTotalItems()} items)
       </h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-4">
-          {items.map((item) => (
-            <Card
-              key={item.id}
-              className="bg-white shadow-md border-0 rounded-lg"
-            >
-              <CardContent className="p-4">
-                <div className="flex items-start space-x-4">
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      ${item.price.toFixed(2)} each
-                    </p>
-
-                    {item.options.length > 0 && (
-                      <div className="mt-2">
-                        <p className="text-xs text-muted-foreground mb-1">
-                          Options:
-                        </p>
-                        {item.options.map((option, idx) => (
-                          <div
-                            key={idx}
-                            className="text-xs text-muted-foreground"
-                          >
-                            {option.optionName}: {option.valueName}
-                            {option.priceModifier > 0 && (
-                              <span>
-                                {" "}
-                                (+${option.priceModifier.toFixed(2)})
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      disabled={item.quantity <= 1}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-8 text-center">{item.quantity}</span>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="font-semibold">
-                      $
-                      {(
-                        (item.price +
-                          item.options.reduce(
-                            (sum, opt) => sum + opt.priceModifier,
-                            0
-                          )) *
-                        item.quantity
-                      ).toFixed(2)}
-                    </p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeItem(item.id)}
-                      className="text-red-500 hover:text-red-700 mt-1"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="lg:col-span-1">
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Checkout Information - Left Side */}
+        <div className="lg:w-3/4">
           <Card className="bg-white shadow-md border-0 rounded-lg">
             <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
+              <CardTitle>Checkout Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Fulfillment Type Selector - only show if all items can be shipped */}
@@ -368,12 +387,10 @@ export default function CartPage() {
                         className="flex items-center gap-2 cursor-pointer flex-1"
                       >
                         <MapPin className="h-4 w-4" />
-                        <div>
-                          <div className="font-medium">Click & Collect</div>
-                          <div className="text-sm text-gray-500">
-                            Pick up at restaurant
-                          </div>
-                        </div>
+                        Click & Collect
+                        <span className="text-sm text-muted-foreground">
+                          Pick up at restaurant
+                        </span>
                       </label>
                     </div>
                     <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
@@ -383,171 +400,223 @@ export default function CartPage() {
                         className="flex items-center gap-2 cursor-pointer flex-1"
                       >
                         <Truck className="h-4 w-4" />
-                        <div>
-                          <div className="font-medium">Delivery</div>
-                          <div className="text-sm text-gray-500">
-                            €7.00 (Free over €50)
-                          </div>
-                        </div>
+                        Delivery
+                        <span className="text-sm text-muted-foreground">
+                          {formatEuro(getShippingCost())}
+                        </span>
                       </label>
                     </div>
                   </RadioGroup>
                 </div>
               )}
 
-              {/* Price Summary */}
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Subtotal:</span>
-                  <span>€{getTotalPrice().toFixed(2)}</span>
+              {/* Customer Information */}
+              <div className="space-y-4">
+                <h3 className="font-semibold">Customer Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    placeholder="First Name"
+                    value={formData.name.split(" ")[0] || ""}
+                    onChange={(e) => {
+                      const lastName = formData.name
+                        .split(" ")
+                        .slice(1)
+                        .join(" ");
+                      setFormData({
+                        ...formData,
+                        name: `${e.target.value} ${lastName}`.trim(),
+                      });
+                    }}
+                    className={
+                      !formData.name.trim()
+                        ? "border-red-200 bg-red-50 focus:border-red-500 focus:ring-red-500"
+                        : ""
+                    }
+                  />
+                  <Input
+                    placeholder="Last Name"
+                    value={formData.name.split(" ").slice(1).join(" ") || ""}
+                    onChange={(e) => {
+                      const firstName = formData.name.split(" ")[0] || "";
+                      setFormData({
+                        ...formData,
+                        name: `${firstName} ${e.target.value}`.trim(),
+                      });
+                    }}
+                    className={
+                      !formData.name.trim()
+                        ? "border-red-200 bg-red-50 focus:border-red-500 focus:ring-red-500"
+                        : ""
+                    }
+                  />
                 </div>
-                {fulfilmentType === "SHIPPING" && (
-                  <div className="flex justify-between">
-                    <span>Shipping:</span>
-                    <span>
-                      {getShippingCost() === 0 ? (
-                        <span className="text-green-600">Free</span>
-                      ) : (
-                        `€${getShippingCost().toFixed(2)}`
-                      )}
-                    </span>
-                  </div>
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      email: e.target.value,
+                    })
+                  }
+                  className={
+                    !formData.email.trim() || !formData.email.includes("@")
+                      ? "border-red-200 bg-red-50 focus:border-red-500 focus:ring-red-500"
+                      : ""
+                  }
+                />
+                <PhoneInput
+                  value={formData.phone}
+                  onChange={handlePhoneChange}
+                  className={
+                    !isPhoneValid
+                      ? "border-red-200 bg-red-50 focus:border-red-500 focus:ring-red-500"
+                      : ""
+                  }
+                />
+                {!isPhoneValid && formData.phone && (
+                  <p className="text-red-600 text-sm">
+                    Please enter a valid phone number
+                  </p>
                 )}
-                <div className="flex justify-between text-lg font-semibold border-t pt-2">
-                  <span>Total:</span>
-                  <span>€{getTotalWithShipping().toFixed(2)}</span>
-                </div>
               </div>
 
-              {/* Customer Information */}
-              <div className="border-t pt-4 space-y-4">
-                <h3 className="font-semibold">Customer Information</h3>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Name *
-                  </label>
+              {/* Shipping Address - only show if shipping is selected */}
+              {fulfilmentType === "SHIPPING" && (
+                <div className="space-y-4">
+                  <h3 className="font-semibold">Shipping Address</h3>
                   <Input
-                    type="text"
-                    value={formData.name}
+                    placeholder="Street Address"
+                    value={shippingFormData.street}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, name: e.target.value }))
+                      setShippingFormData({
+                        ...shippingFormData,
+                        street: e.target.value,
+                      })
                     }
-                    placeholder="Your full name"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Phone *
-                  </label>
-                  <PhoneInput
-                    value={formData.phone}
-                    onChange={handlePhoneChange}
-                    defaultCountry="FI"
-                    placeholder="Phone number"
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Email *
-                  </label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        email: e.target.value,
-                      }))
+                    className={
+                      !shippingFormData.street.trim()
+                        ? "border-red-200 bg-red-50 focus:border-red-500 focus:ring-red-500"
+                        : ""
                     }
-                    placeholder="your@email.com"
-                    required
                   />
-                </div>
-
-                {/* Shipping Address - only show if shipping is selected */}
-                {fulfilmentType === "SHIPPING" && (
-                  <div className="border-t pt-4 space-y-4">
-                    <h3 className="font-semibold">Delivery Address</h3>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Street Address *
-                      </label>
-                      <Input
-                        type="text"
-                        value={shippingFormData.street}
-                        onChange={(e) =>
-                          setShippingFormData((prev) => ({
-                            ...prev,
-                            street: e.target.value,
-                          }))
-                        }
-                        placeholder="Street name and number"
-                        required
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Postal Code *
-                        </label>
-                        <Input
-                          type="text"
-                          value={shippingFormData.postalCode}
-                          onChange={(e) =>
-                            setShippingFormData((prev) => ({
-                              ...prev,
-                              postalCode: e.target.value,
-                            }))
-                          }
-                          placeholder="00000"
-                          maxLength={5}
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          City *
-                        </label>
-                        <Input
-                          type="text"
-                          value={shippingFormData.city}
-                          onChange={(e) =>
-                            setShippingFormData((prev) => ({
-                              ...prev,
-                              city: e.target.value,
-                            }))
-                          }
-                          placeholder="City"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-gray-500">
-                      Currently only delivering within Finland
-                    </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input
+                      placeholder="Postal Code"
+                      value={shippingFormData.postalCode}
+                      onChange={(e) =>
+                        setShippingFormData({
+                          ...shippingFormData,
+                          postalCode: e.target.value,
+                        })
+                      }
+                      className={
+                        !shippingFormData.postalCode.trim()
+                          ? "border-red-200 bg-red-50 focus:border-red-500 focus:ring-red-500"
+                          : ""
+                      }
+                    />
+                    <Input
+                      placeholder="City"
+                      value={shippingFormData.city}
+                      onChange={(e) =>
+                        setShippingFormData({
+                          ...shippingFormData,
+                          city: e.target.value,
+                        })
+                      }
+                      className={
+                        !shippingFormData.city.trim()
+                          ? "border-red-200 bg-red-50 focus:border-red-500 focus:ring-red-500"
+                          : ""
+                      }
+                    />
                   </div>
-                )}
+                  {fulfilmentType === "SHIPPING" &&
+                    shippingFormData.street &&
+                    shippingFormData.postalCode &&
+                    shippingFormData.city &&
+                    !validateShippingAddress({
+                      street: shippingFormData.street,
+                      postalCode: shippingFormData.postalCode,
+                      city: shippingFormData.city,
+                    }).isValid && (
+                      <p className="text-red-600 text-sm">
+                        {
+                          validateShippingAddress({
+                            street: shippingFormData.street,
+                            postalCode: shippingFormData.postalCode,
+                            city: shippingFormData.city,
+                          }).errors[0]
+                        }
+                      </p>
+                    )}
+                </div>
+              )}
+
+              {/* Payment Method */}
+              <div className="space-y-3">
+                <h3 className="font-semibold">Payment Method</h3>
+                <RadioGroup
+                  value={paymentMethod}
+                  onValueChange={(value: "card" | "payAtShop") =>
+                    setPaymentMethod(value)
+                  }
+                >
+                  <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                    <RadioGroupItem value="card" id="card" />
+                    <label
+                      htmlFor="card"
+                      className="flex items-center gap-2 cursor-pointer flex-1"
+                    >
+                      <CreditCard className="h-4 w-4" />
+                      Credit Card
+                    </label>
+                  </div>
+                  {isBonbonCoffee && (
+                    <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                      <RadioGroupItem value="payAtShop" id="payAtShop" />
+                      <label
+                        htmlFor="payAtShop"
+                        className="flex items-center gap-2 cursor-pointer flex-1"
+                      >
+                        <Banknote className="h-4 w-4" />
+                        Pay at shop
+                      </label>
+                    </div>
+                  )}
+                </RadioGroup>
+              </div>
+
+              {/* Submit Button */}
+              <div className="space-y-4">
+                {/* SMS Confirmation Modal */}
+                <SMSConfirmationModal
+                  isOpen={showSMSModal}
+                  onClose={() => setShowSMSModal(false)}
+                  onSuccess={handlePayAtShopOrder}
+                  totalAmount={getTotalWithShipping()}
+                  customerInfo={{
+                    name: formData.name,
+                    phone: formData.phone,
+                    email: formData.email,
+                  }}
+                />
 
                 <Button
-                  variant="brand"
                   className="w-full"
-                  onClick={handleSubmitOrder}
+                  onClick={
+                    isBonbonCoffee && paymentMethod === "payAtShop"
+                      ? () => setShowSMSModal(true)
+                      : handleSubmitOrder
+                  }
                   disabled={
                     isSubmitting ||
-                    getTotalItems() === 0 ||
                     !formData.name.trim() ||
-                    !formData.phone.trim() ||
                     !formData.email.trim() ||
-                    !isValidEmail(formData.email) ||
+                    !formData.email.includes("@") ||
+                    !formData.phone.trim() ||
                     !isPhoneValid ||
                     (fulfilmentType === "SHIPPING" &&
                       (!shippingFormData.street.trim() ||
@@ -562,8 +631,12 @@ export default function CartPage() {
                 >
                   {isSubmitting
                     ? "Processing..."
-                    : `Continue to Payment - €${getTotalWithShipping().toFixed(
-                        2
+                    : isBonbonCoffee && paymentMethod === "payAtShop"
+                    ? `Confirm order with SMS - ${formatEuro(
+                        getTotalWithShipping()
+                      )}`
+                    : `Continue to Payment - ${formatEuro(
+                        getTotalWithShipping()
                       )}`}
                 </Button>
 
@@ -574,6 +647,127 @@ export default function CartPage() {
                 >
                   Clear Cart
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Cart Summary - Right Side */}
+        <div className="lg:w-1/4">
+          <Card className="bg-white shadow-md border-0 rounded-lg">
+            <CardHeader>
+              <CardTitle>Order Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Cart Items */}
+              <div className="space-y-3">
+                {items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex justify-between items-start text-sm"
+                  >
+                    <div className="flex-1 pr-2">
+                      <div className="font-medium">{item.name}</div>
+                      {item.options.length > 0 && (
+                        <div className="text-xs text-muted-foreground">
+                          {item.options.map((option, idx) => (
+                            <div key={idx}>
+                              {option.optionName}: {option.valueName}
+                              {option.priceModifier > 0 && (
+                                <span>
+                                  {" "}
+                                  ({formatEuroModifier(option.priceModifier)})
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="text-xs text-muted-foreground">
+                        {formatEuro(item.price)} × {item.quantity}
+                      </div>
+                    </div>
+                    <div className="font-medium">
+                      {formatEuro(
+                        (item.price +
+                          item.options.reduce(
+                            (sum, opt) => sum + opt.priceModifier,
+                            0
+                          )) *
+                          item.quantity
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <hr className="my-4" />
+
+              {/* Order Totals */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Subtotal</span>
+                  <span>{formatEuro(getTotalPrice())}</span>
+                </div>
+                {fulfilmentType === "SHIPPING" && (
+                  <div className="flex justify-between text-sm">
+                    <span>Delivery</span>
+                    <span>{formatEuro(getShippingCost())}</span>
+                  </div>
+                )}
+                <hr className="my-2" />
+                <div className="flex justify-between font-semibold">
+                  <span>Total</span>
+                  <span>{formatEuro(getTotalWithShipping())}</span>
+                </div>
+              </div>
+
+              {/* Quick Item Management */}
+              <hr className="my-4" />
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm">Quick Edit</h4>
+                {items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="truncate flex-1 pr-2">{item.name}</span>
+                    <div className="flex items-center space-x-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity - 1)
+                        }
+                        disabled={item.quantity <= 1}
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <span className="w-8 text-center text-xs">
+                        {item.quantity}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity + 1)
+                        }
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                        onClick={() => removeItem(item.id)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>

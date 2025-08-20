@@ -3,7 +3,7 @@
 export const SHIPPING_CONFIG = {
   FIXED_SHIPPING_COST: 7.0, // €7 fixed shipping cost
   FREE_SHIPPING_THRESHOLD: 50.0, // Free shipping over €50
-  SUPPORTED_COUNTRY: 'FI', // Only Finland shipping
+  SUPPORTED_COUNTRY: "FI", // Only Finland shipping
 } as const;
 
 export function calculateShippingCost(subtotal: number): number {
@@ -13,8 +13,10 @@ export function calculateShippingCost(subtotal: number): number {
   return SHIPPING_CONFIG.FIXED_SHIPPING_COST;
 }
 
-export function canItemsBeShipped(items: Array<{ canShip?: boolean }>): boolean {
-  return items.length > 0 && items.every(item => item.canShip === true);
+export function canItemsBeShipped(
+  items: Array<{ canShip?: boolean }>
+): boolean {
+  return items.length > 0 && items.every((item) => item.canShip === true);
 }
 
 export interface ShippingCalculation {
@@ -30,13 +32,13 @@ export function calculateOrderTotals(
 ): ShippingCalculation {
   // Calculate subtotal
   let subtotal = items.reduce((total, item) => {
-    return total + (item.price * item.quantity);
+    return total + item.price * item.quantity;
   }, 0);
 
   // Add option modifiers if provided
   if (options) {
     subtotal += options.reduce((total, option) => {
-      return total + (option.priceModifier * option.quantity);
+      return total + option.priceModifier * option.quantity;
     }, 0);
   }
 
@@ -55,7 +57,7 @@ export function calculateOrderTotals(
 
 export function isValidFinnishPostalCode(postalCode: string): boolean {
   // Finnish postal codes are 5 digits
-  const cleanCode = postalCode.replace(/\s/g, '');
+  const cleanCode = postalCode.replace(/\s/g, "");
   return /^\d{5}$/.test(cleanCode);
 }
 
@@ -67,17 +69,17 @@ export function validateShippingAddress(address: {
   const errors: string[] = [];
 
   if (!address.street.trim()) {
-    errors.push('Street address is required');
+    errors.push("Street address is required");
   }
 
   if (!address.postalCode.trim()) {
-    errors.push('Postal code is required');
+    errors.push("Postal code is required");
   } else if (!isValidFinnishPostalCode(address.postalCode)) {
-    errors.push('Postal code must be 5 digits');
+    errors.push("Postal code must be 5 digits");
   }
 
   if (!address.city.trim()) {
-    errors.push('City is required');
+    errors.push("City is required");
   }
 
   return {

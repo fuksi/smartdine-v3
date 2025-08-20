@@ -1,0 +1,227 @@
+Debugger listening on ws://127.0.0.1:55691/35487012-89d5-48d1-8cd5-a9b1a7dc47ab
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+Debugger listening on ws://127.0.0.1:55694/d7df9c4f-c47c-493a-b0ce-8ce999bb07fa
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+Debugger listening on ws://127.0.0.1:55696/7d231406-06eb-4687-875d-762fa19bafa5
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+Starting seed...
+✓ Superadmin already exists: phuc.trandt@outlook.com
+✓ Merchant already exists: Uuno Pizza
+✓ Location already exists: Uuno Jätkäsaari
+Checking for admin user: test@outlook.com
+Admin user already exists: test@outlook.com
+✓ Menu already exists: Main Menu
+✓ Pizza category already exists
+✓ Grill category already exists
+✓ Drinks category already exists
+✓ Margherita pizza already exists
+✓ Pepperoni pizza already exists
+✓ Classic Burger already exists
+✓ Custom Sandwich already exists
+✓ Premium Burger already exists
+✓ Coca Cola already exists
+✓ Size option for Margherita already exists
+✓ Size option for Pepperoni already exists
+✓ Extras option for Burger already exists
+🌱 Starting Bonbon Coffee seeding...
+✓ Merchant already exists: Bonbon Coffee
+✓ Location already exists: Bonbon Coffee Central
+✓ Opening hours already exist
+✓ Admin user already exists: bonbon@test.com
+✓ Menu already exists: Bonbon Menu
+✓ Category already exists
+Downloading image from: https://imageproxy.wolt.com/assets/680811a9e20f06ebc0e36299
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/680811ace9d4a244216e8ca6.jpg
+⏭️ Product "Bon Espresso - 250g Whole Beans" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/68081b85c76fd2c964ac3f21
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/68081a97ac530e53bd19379b.jpg
+⏭️ Product "Fine Robusta - 250g Whole Beans" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/68081c51c1278bfb6ce28584
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/68081c53e9d4a2442170cd4c.jpg
+⏭️ Product "Yellow Bourbon - 250g Whole Beans" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/68081d6ec76fd2c964ac3f23
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/68081d73e9d4a244217154f1.jpg
+⏭️ Product "Tasting Set - 3 x 250g Whole Beans" already exists
+⏭️ Product "Bon Espresso - 1kg Whole Beans" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/67f90b9e5e06813d12111d8d
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/67f90ba01ba8c07e15748288.jpg
+⏭️ Product "Easter Mango Mousse (L)" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/67f90d3d5e06813d12111dd1
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/67f90d3ecca1e97c9baca42e.jpg
+⏭️ Product "Lemon Curd Cake (L)" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/680b6bea37ab058cca26a5bd
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/680b6a39a519eb16f164a304.jpg
+⏭️ Product "Matcha Basque Cheesecake & Strawberry Cream" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/682ecf547957faa8599d029a
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/682ecc6d88bfdd464de9b64e.jpg
+⏭️ Product "Lemon Tiramisu (L)" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/68721b01e214fc3c7350e9ce
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/68710da2bc1d172317f5ae75.jpg
+⏭️ Product "Earl Grey Cake Roll" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/6879eae885456c602b665760
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/6878d2bb1efbd07898ea51bc.jpg
+⏭️ Product "Vanilla Burnt Cheesecake" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/6879eaef85456c602b665762
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/6878d3881efbd07898ea52ca.jpg
+⏭️ Product "Matcha Burnt Cheesecake" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/68721bfb972c2e1223ec9220
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/68710d4ebc1d172317f5ad24.jpg
+⏭️ Product "Kardemummapulla" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/66f815243d87030c87011c1d
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b832.jpg
+⏭️ Product "Almond Croissant (L)" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/66f815193d87030c87011c1c
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b831.jpg
+⏭️ Product "Pistachio Croissant (L)" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/672cc8bdca474667e008b563
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/672aa82822e9c678253e70fb.jpg
+⏭️ Product "Butter Croissant (L)" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/674cad16d972bb336cbd8641
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/6687bf90583d3641946f2c24.jpg
+⏭️ Product "Matcha Cheese Roll (L)" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/66757d23a097e73a6e5d0bd3
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/6674a42c195aa6694deb7bc5.jpg
+⏭️ Product "Pistachio Tiramisu (L)" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/665c969bca587a012e7bba3e
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b835.jpg
+⏭️ Product "Matcha Tiramisu (L)" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/665c9689ca587a012e7bba3d
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b834.jpg
+⏭️ Product "Traditional Tiramisu (L)" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/665c9676ca587a012e7bba3c
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b830.jpg
+⏭️ Product "Chocolate Cheese Roll (L)" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/689aebfd9e033e41ab6f7985
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b82f.jpg
+⏭️ Product "Strawberry Cake Roll (L)" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/672f75d366b0360b8a4ba016
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/66a964302a8ad425ca8c444e.jpg
+⏭️ Product "Breakfast Combo" already exists
+⏭️ Product "Bonbon Suosikit" already exists
+⏭️ Product "Lunch Combo" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/668bd3b7aca1946997c81368
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/668bcfda583d3641946fb4ec.jpg
+⏭️ Product "Trio Delight Cake Rolls" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/666084660b91474226d1a371
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/6660843b72d75f4f9b603d4c.jpg
+⏭️ Product "Evergreen Box" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/66608710bed66a33ac2e6837
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/6660871192ca4d1d9ce8fe44.jpg
+⏭️ Product "Black Almondy Box" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/66609050c4f5fa302db0b90b
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/6660825d441e9c60a7370f55.jpg
+⏭️ Product "Custom Dessert Box" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/67cecc34d505ff00db831ca2
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/67cb3a78fbd0cf3e17670653.jpg
+✓ Updated product with image: Bon Siesta
+Downloading image from: https://imageproxy.wolt.com/assets/66757d09a097e73a6e5d0bd2
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/6674a7e8ad73571ab525fe04.jpg
+✓ Updated product with image: Pistachio Dream Box
+Downloading image from: https://imageproxy.wolt.com/assets/67acac51b6b7de2eca58c342
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/67acac5444beb404a6fd59b8.jpg
+✓ Updated product with image: Rose Latte Duo
+⏭️ Product "Latte Combo for 4" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/674db7ba4b80e20da9346c99
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/6654ee6521626369c6184842.jpg
+✓ Updated product with image: Salted Cream Coffee (L)
+Downloading image from: https://imageproxy.wolt.com/assets/674db9dbd972bb336cbd9dce
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/674db64683af0527fd6a4e51.jpg
+✓ Updated product with image: Salted Cream Matcha (L)
+Downloading image from: https://imageproxy.wolt.com/assets/674dbb5bd972bb336cbd9dee
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/674db6f983af0527fd6a5043.jpg
+✓ Updated product with image: Salted Cream Cacao (L)
+Downloading image from: https://imageproxy.wolt.com/assets/6674a711df73a36cb0dbacf8
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/6674a4897f738f555306ae85.jpg
+✓ Updated product with image: Pistachio Matcha Latte
+Downloading image from: https://imageproxy.wolt.com/assets/665702ec55412123d459072e
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b827.jpg
+✓ Updated product with image: Matcha Latte
+Downloading image from: https://imageproxy.wolt.com/assets/66b52690308a842e2ca761ff
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/66b51e9b8be7826592e7437d.jpg
+✓ Updated product with image: Strawberry Matcha Foam 🍓🧊
+Downloading image from: https://imageproxy.wolt.com/assets/665702f20b61ae1437497c61
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b81f.jpg
+✓ Updated product with image: Salted Caramel Latte
+Downloading image from: https://imageproxy.wolt.com/assets/66570257447efd43463bbf38
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b829.jpg
+✓ Updated product with image: Bonbon Coffee
+Downloading image from: https://imageproxy.wolt.com/assets/6657023155412123d4590720
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b825.jpg
+✓ Updated product with image: Tiramisu Latte
+Downloading image from: https://imageproxy.wolt.com/assets/665702370b61ae1437497c55
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b826.jpg
+✓ Updated product with image: Tiramisu Matcha Latte
+Downloading image from: https://imageproxy.wolt.com/assets/6657023d55412123d4590721
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b824.jpg
+✓ Updated product with image: Ame Sunset
+Downloading image from: https://imageproxy.wolt.com/assets/66f7de61143f620059414e57
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b82c.jpg
+✓ Updated product with image: Bottled Chilled Matcha
+Downloading image from: https://imageproxy.wolt.com/assets/66f7de913d87030c87011ae0
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b82d.jpg
+✓ Updated product with image: Bottled Chilled Choco
+Downloading image from: https://imageproxy.wolt.com/assets/66f7de4f143f620059414e56
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b82b.jpg
+✓ Updated product with image: Bottled Cold Brew
+Downloading image from: https://imageproxy.wolt.com/assets/66f7de3e143f620059414e55
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/66b5227e8be7826592e743b3.jpg
+✓ Updated product with image: Bottled Strawberry Matcha
+Downloading image from: https://imageproxy.wolt.com/assets/67acad5c2c28ca1ef7f4715a
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/67acad5d44beb404a6fd5cff.jpg
+✓ Updated product with image: Sesame Roll
+Downloading image from: https://imageproxy.wolt.com/assets/67a61d7437259c46317a2386
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/67a61ba28c358c11299b145c.jpg
+✓ Updated product with image: Espresso Burnt Cheesecake
+Downloading image from: https://imageproxy.wolt.com/assets/672f73bf591b80477edac470
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/6705a76b94457b0e3c1a521e.jpg
+✓ Updated product with image: Cinnamon Roll Cheese Top
+Downloading image from: https://imageproxy.wolt.com/assets/66f815eb9e764e39c1b6c1ea
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/66f815ecd8d6fe0f7c1e8615.jpg
+✓ Updated product with image: Apple Pie Crumble Oat Walnut Croissant (L)
+⏭️ Product "Espresso Cheesecake" already exists
+⏭️ Product "Croissant Egg Tart (L)" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/67081ee60baf9542542e5437
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/6705b32f94457b0e3c1a52a9.jpg
+✓ Updated product with image: Pumpkin Almond Cheese Roll
+Downloading image from: https://imageproxy.wolt.com/assets/67081eda0baf9542542e5436
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/6705b2fd94457b0e3c1a52a6.jpg
+✓ Updated product with image: Red Velvet Cheese Roll
+Downloading image from: https://imageproxy.wolt.com/assets/66f7ec559e764e39c1b6c111
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/66f7e620c1df0e32d89c2825.jpg
+✓ Updated product with image: Dirty Chai Latte
+Downloading image from: https://imageproxy.wolt.com/assets/66570206ca587a012e7bac3e
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b81e.jpg
+✓ Updated product with image: Latte
+Downloading image from: https://imageproxy.wolt.com/assets/665702ca0b61ae1437497c5d
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b822.jpg
+✓ Updated product with image: Cappuccino
+Downloading image from: https://imageproxy.wolt.com/assets/665702ce0b61ae1437497c5e
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b823.jpg
+✓ Updated product with image: Americano
+Downloading image from: https://imageproxy.wolt.com/assets/665702e055412123d459072b
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b828.jpg
+✓ Updated product with image: Chocolate
+Downloading image from: https://imageproxy.wolt.com/assets/66570265848a677b03641b28
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/664f1e4ab79f8345b223b82a.jpg
+✓ Updated product with image: Cold Brew with milk
+Downloading image from: https://imageproxy.wolt.com/assets/666097d2950ec558de6d1d4f
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/6654e8ecc2006718edbedc5b.jpg
+✓ Updated product with image: Cold Brew Tonic
+⏭️ Product "Cold Brew Lychee" already exists
+Downloading image from: https://imageproxy.wolt.com/assets/6708224aa7eb5c5d5a81510f
+✓ Uploaded image: https://smartdine-v3.fra1.digitaloceanspaces.com/products/66f7e5d227bd1c66e544e187.jpg
+✓ Updated product with image: Pumpkin Spice Latte
+
+🎉 Bonbon Coffee seeding completed!
+✓ Created 0 products
+✓ Updated 32 products with images
+⏭️ Skipped 33 existing products
+📍 Location: Bonbon Coffee Central
+🏪 Merchant: Bonbon Coffee
+✅ Seed completed successfully!
+Waiting for the debugger to disconnect...
+Waiting for the debugger to disconnect...
+Waiting for the debugger to disconnect...

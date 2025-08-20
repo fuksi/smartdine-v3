@@ -108,6 +108,23 @@ async function sendPushbulletSMS(
   }
 }
 
+export async function sendOTPSMS(
+  phoneNumber: string,
+  otpCode: string
+): Promise<void> {
+  if (!isFinnishPhoneNumber(phoneNumber)) {
+    throw new Error("Only Finnish phone numbers are supported");
+  }
+
+  const message = `SmartDine verification code: ${otpCode}
+
+This code will expire in 10 minutes. Do not share this code with anyone.`;
+
+  console.log(`📱 SMS: Sending OTP to ${phoneNumber}`);
+  await sendPushbulletSMS(phoneNumber, message);
+  console.log(`📱 SMS: ✅ OTP sent successfully`);
+}
+
 export async function sendOrderAcceptedSMS(data: OrderSMSData) {
   if (!isFinnishPhoneNumber(data.customerPhone)) {
     return;

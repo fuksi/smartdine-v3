@@ -36,9 +36,6 @@ export function TopCartButton() {
                 <div className="font-bold text-lg">
                   €{totalPrice.toFixed(2)}
                 </div>
-                <div className="text-sm opacity-90 hidden sm:block">
-                  {totalItems} item{totalItems !== 1 ? "s" : ""}
-                </div>
               </div>
             </Button>
           </Link>

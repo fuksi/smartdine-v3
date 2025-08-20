@@ -19,25 +19,34 @@ export interface CartItem {
 }
 
 interface CartState {
-  items: CartItem[];
-  locationId: string | null;
+  // Store carts per restaurant location
+  cartsByLocation: Record<
+    string,
+    {
+      items: CartItem[];
+      fulfilmentType: "PICKUP" | "SHIPPING";
+      customerInfo: {
+        name: string;
+        phone: string;
+        email: string;
+      } | null;
+      shippingAddress: {
+        street: string;
+        postalCode: string;
+        city: string;
+      } | null;
+    }
+  >;
+  // Current active location context
+  currentLocationId: string | null;
   merchantSlug: string | null;
   locationSlug: string | null;
-  fulfilmentType: 'PICKUP' | 'SHIPPING';
-  customerInfo: {
-    name: string;
-    phone: string;
-    email: string;
-  } | null;
-  shippingAddress: {
-    street: string;
-    postalCode: string;
-    city: string;
-  } | null;
+
   addItem: (item: CartItem) => void;
   removeItem: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
+  clearCartForLocation: (locationId: string) => void;
   setLocation: (
     locationId: string,
     merchantSlug?: string,
@@ -48,7 +57,7 @@ interface CartState {
     phone: string;
     email: string;
   }) => void;
-  setFulfilmentType: (type: 'PICKUP' | 'SHIPPING') => void;
+  setFulfilmentType: (type: "PICKUP" | "SHIPPING") => void;
   setShippingAddress: (address: {
     street: string;
     postalCode: string;
@@ -61,85 +70,243 @@ interface CartState {
   getTotalWithShipping: () => number;
 }
 
+// Selector functions to get current cart data
+export const getCurrentCart = (state: CartState) => {
+  const { currentLocationId, cartsByLocation } = state;
+  if (!currentLocationId) return null;
+  return cartsByLocation[currentLocationId] || null;
+};
+
+export const getCurrentItems = (state: CartState) => {
+  const currentCart = getCurrentCart(state);
+  return currentCart?.items || [];
+};
+
+export const getCurrentFulfilmentType = (state: CartState) => {
+  const currentCart = getCurrentCart(state);
+  return currentCart?.fulfilmentType || "PICKUP";
+};
+
+export const getCurrentCustomerInfo = (state: CartState) => {
+  const currentCart = getCurrentCart(state);
+  return currentCart?.customerInfo || null;
+};
+
+export const getCurrentShippingAddress = (state: CartState) => {
+  const currentCart = getCurrentCart(state);
+  return currentCart?.shippingAddress || null;
+};
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
-      items: [],
-      locationId: null,
+      cartsByLocation: {},
+      currentLocationId: null,
       merchantSlug: null,
       locationSlug: null,
-      fulfilmentType: 'PICKUP' as const,
-      customerInfo: null,
-      shippingAddress: null,
 
       addItem: (item) => {
+        const { currentLocationId } = get();
+        if (!currentLocationId) return;
+
         set((state) => {
-          const existingItemIndex = state.items.findIndex(
+          const currentCart = state.cartsByLocation[currentLocationId] || {
+            items: [],
+            fulfilmentType: "PICKUP" as const,
+            customerInfo: null,
+            shippingAddress: null,
+          };
+
+          const existingItemIndex = currentCart.items.findIndex(
             (cartItem) =>
               cartItem.productId === item.productId &&
               JSON.stringify(cartItem.options) === JSON.stringify(item.options)
           );
 
+          let updatedItems;
           if (existingItemIndex >= 0) {
-            const updatedItems = [...state.items];
+            updatedItems = [...currentCart.items];
             updatedItems[existingItemIndex].quantity += item.quantity;
-            return { items: updatedItems };
           } else {
-            return { items: [...state.items, item] };
+            updatedItems = [...currentCart.items, item];
           }
+
+          return {
+            cartsByLocation: {
+              ...state.cartsByLocation,
+              [currentLocationId]: {
+                ...currentCart,
+                items: updatedItems,
+              },
+            },
+          };
         });
       },
 
       removeItem: (itemId) => {
-        set((state) => ({
-          items: state.items.filter((item) => item.id !== itemId),
-        }));
+        const { currentLocationId } = get();
+        if (!currentLocationId) return;
+
+        set((state) => {
+          const currentCart = state.cartsByLocation[currentLocationId];
+          if (!currentCart) return state;
+
+          return {
+            cartsByLocation: {
+              ...state.cartsByLocation,
+              [currentLocationId]: {
+                ...currentCart,
+                items: currentCart.items.filter((item) => item.id !== itemId),
+              },
+            },
+          };
+        });
       },
 
       updateQuantity: (itemId, quantity) => {
-        set((state) => ({
-          items: state.items
-            .map((item) => (item.id === itemId ? { ...item, quantity } : item))
-            .filter((item) => item.quantity > 0),
-        }));
+        const { currentLocationId } = get();
+        if (!currentLocationId) return;
+
+        set((state) => {
+          const currentCart = state.cartsByLocation[currentLocationId];
+          if (!currentCart) return state;
+
+          return {
+            cartsByLocation: {
+              ...state.cartsByLocation,
+              [currentLocationId]: {
+                ...currentCart,
+                items: currentCart.items
+                  .map((item) =>
+                    item.id === itemId ? { ...item, quantity } : item
+                  )
+                  .filter((item) => item.quantity > 0),
+              },
+            },
+          };
+        });
       },
 
       clearCart: () => {
-        set({
-          items: [],
-          customerInfo: null,
-          locationId: null,
-          merchantSlug: null,
-          locationSlug: null,
-          fulfilmentType: 'PICKUP',
-          shippingAddress: null,
+        const { currentLocationId } = get();
+        if (!currentLocationId) return;
+
+        set((state) => {
+          const newCartsByLocation = { ...state.cartsByLocation };
+          delete newCartsByLocation[currentLocationId];
+
+          return {
+            cartsByLocation: newCartsByLocation,
+          };
+        });
+      },
+
+      clearCartForLocation: (locationId) => {
+        set((state) => {
+          const newCartsByLocation = { ...state.cartsByLocation };
+          delete newCartsByLocation[locationId];
+
+          return {
+            cartsByLocation: newCartsByLocation,
+          };
         });
       },
 
       setLocation: (locationId, merchantSlug, locationSlug) => {
-        set({ locationId, merchantSlug, locationSlug });
+        set({
+          currentLocationId: locationId,
+          merchantSlug,
+          locationSlug,
+        });
       },
 
       setCustomerInfo: (info) => {
-        set({ customerInfo: info });
+        const { currentLocationId } = get();
+        if (!currentLocationId) return;
+
+        set((state) => {
+          const currentCart = state.cartsByLocation[currentLocationId] || {
+            items: [],
+            fulfilmentType: "PICKUP" as const,
+            customerInfo: null,
+            shippingAddress: null,
+          };
+
+          return {
+            cartsByLocation: {
+              ...state.cartsByLocation,
+              [currentLocationId]: {
+                ...currentCart,
+                customerInfo: info,
+              },
+            },
+          };
+        });
       },
 
       setFulfilmentType: (type) => {
-        set({ fulfilmentType: type });
+        const { currentLocationId } = get();
+        if (!currentLocationId) return;
+
+        set((state) => {
+          const currentCart = state.cartsByLocation[currentLocationId] || {
+            items: [],
+            fulfilmentType: "PICKUP" as const,
+            customerInfo: null,
+            shippingAddress: null,
+          };
+
+          return {
+            cartsByLocation: {
+              ...state.cartsByLocation,
+              [currentLocationId]: {
+                ...currentCart,
+                fulfilmentType: type,
+              },
+            },
+          };
+        });
       },
 
       setShippingAddress: (address) => {
-        set({ shippingAddress: address });
+        const { currentLocationId } = get();
+        if (!currentLocationId) return;
+
+        set((state) => {
+          const currentCart = state.cartsByLocation[currentLocationId] || {
+            items: [],
+            fulfilmentType: "PICKUP" as const,
+            customerInfo: null,
+            shippingAddress: null,
+          };
+
+          return {
+            cartsByLocation: {
+              ...state.cartsByLocation,
+              [currentLocationId]: {
+                ...currentCart,
+                shippingAddress: address,
+              },
+            },
+          };
+        });
       },
 
       canAllItemsBeShipped: () => {
-        const items = get().items;
-        return canItemsBeShipped(items);
+        const { currentLocationId, cartsByLocation } = get();
+        if (!currentLocationId) return false;
+        const currentCart = cartsByLocation[currentLocationId];
+        if (!currentCart) return false;
+        return canItemsBeShipped(currentCart.items);
       },
 
       getTotalPrice: () => {
-        const items = get().items;
-        return items.reduce((total, item) => {
+        const { currentLocationId, cartsByLocation } = get();
+        if (!currentLocationId) return 0;
+        const currentCart = cartsByLocation[currentLocationId];
+        if (!currentCart) return 0;
+
+        return currentCart.items.reduce((total, item) => {
           const optionsPrice = item.options.reduce(
             (sum, option) => sum + option.priceModifier,
             0
@@ -149,22 +316,31 @@ export const useCartStore = create<CartState>()(
       },
 
       getTotalItems: () => {
-        const items = get().items;
-        return items.reduce((total, item) => total + item.quantity, 0);
+        const { currentLocationId, cartsByLocation } = get();
+        if (!currentLocationId) return 0;
+        const currentCart = cartsByLocation[currentLocationId];
+        if (!currentCart) return 0;
+
+        return currentCart.items.reduce(
+          (total, item) => total + item.quantity,
+          0
+        );
       },
 
       getShippingCost: () => {
-        const { items, fulfilmentType } = get();
-        if (fulfilmentType !== 'SHIPPING') return 0;
-        
-        const subtotal = items.reduce((total, item) => {
+        const { currentLocationId, cartsByLocation } = get();
+        if (!currentLocationId) return 0;
+        const currentCart = cartsByLocation[currentLocationId];
+        if (!currentCart || currentCart.fulfilmentType !== "SHIPPING") return 0;
+
+        const subtotal = currentCart.items.reduce((total, item) => {
           const optionsPrice = item.options.reduce(
             (sum, option) => sum + option.priceModifier,
             0
           );
           return total + (item.price + optionsPrice) * item.quantity;
         }, 0);
-        
+
         return calculateShippingCost(subtotal);
       },
 

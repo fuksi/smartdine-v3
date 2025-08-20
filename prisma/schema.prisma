@@ -67,6 +67,7 @@ model Category {
   description String?
   sortOrder   Int       @default(0)
   isActive    Boolean   @default(true)
+  canShip     Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   menu        Menu      @relation(fields: [menuId], references: [id], onDelete: Cascade)
@@ -130,6 +131,7 @@ model Order {
   id                      String           @id @default(uuid())
   displayId               Int              @unique
   locationId              String
+  customerId              String?
   customerName            String
   customerPhone           String
   customerEmail           String?
@@ -152,6 +154,7 @@ model Order {
   paymentCapturedAmount   Decimal?
   paymentCapturedAt       DateTime?
   items                   OrderItem[]
+  customer                Customer?        @relation(fields: [customerId], references: [id])
   location                MerchantLocation @relation(fields: [locationId], references: [id])
 
   @@map("orders")
@@ -289,6 +292,46 @@ model SuperAdminOTP {
   admin     SuperAdmin @relation(fields: [adminId], references: [id], onDelete: Cascade)
 
   @@map("super_admin_otps")
+}
+
+model Customer {
+  id          String           @id @default(uuid())
+  phone       String           @unique
+  firstName   String?
+  lastName    String?
+  email       String?
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  orders      Order[]
+  otpCodes    CustomerOTP[]
+  sessions    CustomerSession[]
+
+  @@map("customers")
+}
+
+model CustomerSession {
+  id         String   @id @default(uuid())
+  customerId String
+  token      String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("customer_sessions")
+}
+
+model CustomerOTP {
+  id         String   @id @default(uuid())
+  customerId String?
+  phone      String
+  code       String
+  expiresAt  DateTime
+  isUsed     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("customer_otps")
 }
 
 enum ProductOptionType {

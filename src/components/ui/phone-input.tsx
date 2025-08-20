@@ -129,12 +129,12 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
   const popularCountries = ["FI", "SE", "NO", "DK", "US", "GB", "DE", "FR"];
 
   return (
-    <div className={cn("flex", className)}>
+    <div className={cn("flex flex-col sm:flex-row", className)}>
       {/* Country Selector */}
       <select
         value={selectedCountry}
         onChange={(e) => handleCountryChange(e.target.value)}
-        className="h-10 rounded-l-md border border-r-0 border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="h-10 rounded-md sm:rounded-l-md sm:rounded-r-none border sm:border-r-0 border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mb-2 sm:mb-0 w-full sm:w-48 sm:flex-shrink-0"
       >
         <optgroup label="Popular">
           {popularCountries.map((country) => (
@@ -160,7 +160,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
         value={phoneInput}
         onChange={(e) => handlePhoneChange(e.target.value)}
         placeholder={placeholder}
-        className="flex-1 h-10 rounded-r-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="flex-1 h-10 rounded-md sm:rounded-l-none sm:rounded-r-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       />
     </div>
   );

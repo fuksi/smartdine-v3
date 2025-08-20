@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { formatEuro } from "@/lib/currency";
 import {
   Plus,
   Edit2,
@@ -42,6 +43,7 @@ interface Product {
   price: number;
   imageUrl?: string;
   isAvailable: boolean;
+  canShip: boolean;
   sortOrder: number;
   options: ProductOption[];
 }
@@ -52,6 +54,7 @@ interface Category {
   description?: string;
   sortOrder: number;
   isActive: boolean;
+  canShip: boolean;
   products: Product[];
 }
 
@@ -82,6 +85,7 @@ export default function MenuManagementPage() {
     sortOrder: "",
     isActive: true,
     isAvailable: true,
+    canShip: false,
     isRequired: false,
     type: "RADIO",
   });
@@ -139,6 +143,8 @@ export default function MenuManagementPage() {
       sortOrder: item?.sortOrder?.toString() || "0",
       isActive: (item as Category)?.isActive ?? true,
       isAvailable: (item as Product)?.isAvailable ?? true,
+      canShip:
+        (item as Product)?.canShip ?? (item as Category)?.canShip ?? false,
       isRequired: (item as ProductOption)?.isRequired ?? false,
       type: (item as ProductOption)?.type || "RADIO",
     });
@@ -153,6 +159,7 @@ export default function MenuManagementPage() {
       sortOrder: "",
       isActive: true,
       isAvailable: true,
+      canShip: false,
       isRequired: false,
       type: "RADIO",
     });
@@ -232,6 +239,41 @@ export default function MenuManagementPage() {
       }
     } catch (error) {
       console.error("Error toggling status:", error);
+    }
+  };
+
+  const toggleCategoryShippingWithProducts = async (
+    categoryId: string,
+    currentValue: boolean
+  ) => {
+    if (
+      !confirm(
+        "Do you want to apply this shipping setting to all products in this category?"
+      )
+    ) {
+      // Just toggle the category itself
+      await toggleItemStatus("categories", categoryId, "canShip", currentValue);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/admin/menu/categories/${categoryId}/shipping`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            canShip: !currentValue,
+            updateProducts: true,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        await fetchMenuData();
+      }
+    } catch (error) {
+      console.error("Error toggling category shipping:", error);
     }
   };
 
@@ -462,6 +504,23 @@ export default function MenuManagementPage() {
                 />
                 <label htmlFor="isActive" className="text-sm">
                   Active
+                </label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="canShip"
+                  checked={formData.canShip}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      canShip: e.target.checked,
+                    }))
+                  }
+                />
+                <label htmlFor="canShip" className="text-sm">
+                  Can Ship
                 </label>
               </div>
 
@@ -735,6 +794,26 @@ export default function MenuManagementPage() {
                         </label>
                       </div>
 
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id={`canShip-${category.id}`}
+                          checked={formData.canShip}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              canShip: e.target.checked,
+                            }))
+                          }
+                        />
+                        <label
+                          htmlFor={`canShip-${category.id}`}
+                          className="text-sm"
+                        >
+                          Can Ship
+                        </label>
+                      </div>
+
                       <div className="flex gap-2 pt-4">
                         <Button type="submit" variant="brand">
                           Update
@@ -786,6 +865,16 @@ export default function MenuManagementPage() {
                         >
                           {category.isActive ? "Active" : "Inactive"}
                         </Badge>
+                        <Badge
+                          variant="outline"
+                          className={
+                            category.canShip
+                              ? "border-green-500 text-green-700 bg-green-50"
+                              : "border-gray-500 text-gray-700 bg-gray-50"
+                          }
+                        >
+                          {category.canShip ? "Shippable" : "No Shipping"}
+                        </Badge>
                       </div>
                       <div
                         className="flex items-center gap-2"
@@ -813,6 +902,21 @@ export default function MenuManagementPage() {
                                 category.id,
                                 "isActive",
                                 !checked
+                              )
+                            }
+                            size="sm"
+                          />
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-gray-600">
+                            {category.canShip ? "Shippable" : "No Shipping"}
+                          </span>
+                          <ToggleSwitch
+                            checked={category.canShip}
+                            onChange={() =>
+                              toggleCategoryShippingWithProducts(
+                                category.id,
+                                category.canShip
                               )
                             }
                             size="sm"
@@ -926,6 +1030,25 @@ export default function MenuManagementPage() {
                                       className="text-sm"
                                     >
                                       Available
+                                    </label>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="checkbox"
+                                      id={`canShip-${category.id}-new`}
+                                      checked={formData.canShip}
+                                      onChange={(e) =>
+                                        setFormData((prev) => ({
+                                          ...prev,
+                                          canShip: e.target.checked,
+                                        }))
+                                      }
+                                    />
+                                    <label
+                                      htmlFor={`canShip-${category.id}-new`}
+                                      className="text-sm"
+                                    >
+                                      Can Ship
                                     </label>
                                   </div>
                                   <div className="flex gap-2">
@@ -1042,6 +1165,25 @@ export default function MenuManagementPage() {
                                           className="text-sm"
                                         >
                                           Available
+                                        </label>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <input
+                                          type="checkbox"
+                                          id={`canShip-${product.id}`}
+                                          checked={formData.canShip}
+                                          onChange={(e) =>
+                                            setFormData((prev) => ({
+                                              ...prev,
+                                              canShip: e.target.checked,
+                                            }))
+                                          }
+                                        />
+                                        <label
+                                          htmlFor={`canShip-${product.id}`}
+                                          className="text-sm"
+                                        >
+                                          Can Ship
                                         </label>
                                       </div>
 
@@ -1167,7 +1309,7 @@ export default function MenuManagementPage() {
                                           </p>
                                         )}
                                         <p className="text-sm font-medium text-green-600">
-                                          ${Number(product.price).toFixed(2)}
+                                          {formatEuro(Number(product.price))}
                                         </p>
                                       </div>
                                       <Badge
@@ -1190,6 +1332,18 @@ export default function MenuManagementPage() {
                                             : ""}
                                         </Badge>
                                       )}
+                                      <Badge
+                                        variant="outline"
+                                        className={
+                                          product.canShip
+                                            ? "border-green-500 text-green-700 bg-green-50"
+                                            : "border-gray-500 text-gray-700 bg-gray-50"
+                                        }
+                                      >
+                                        {product.canShip
+                                          ? "Shippable"
+                                          : "No Shipping"}
+                                      </Badge>
                                     </div>
                                     <div className="flex items-center gap-2">
                                       <div className="flex items-center gap-1">
@@ -1205,6 +1359,25 @@ export default function MenuManagementPage() {
                                               "products",
                                               product.id,
                                               "isAvailable",
+                                              !checked
+                                            )
+                                          }
+                                          size="sm"
+                                        />
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <span className="text-xs text-gray-600">
+                                          {product.canShip
+                                            ? "Shippable"
+                                            : "No Shipping"}
+                                        </span>
+                                        <ToggleSwitch
+                                          checked={product.canShip}
+                                          onChange={(checked) =>
+                                            toggleItemStatus(
+                                              "products",
+                                              product.id,
+                                              "canShip",
                                               !checked
                                             )
                                           }

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { MobileCartButton } from "@/components/mobile-cart-button";
-import { TopCartButton } from "@/components/top-cart-button";
+import { StickyTopBar } from "@/components/sticky-top-bar";
+import { CustomerAuthProvider } from "@/lib/auth/CustomerAuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,9 +30,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <main>{children}</main>
-        <MobileCartButton />
-        <TopCartButton />
+        <CustomerAuthProvider>
+          <main>{children}</main>
+          <MobileCartButton />
+          <StickyTopBar />
+        </CustomerAuthProvider>
       </body>
     </html>
   );

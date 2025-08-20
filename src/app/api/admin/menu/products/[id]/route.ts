@@ -8,7 +8,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, description, price, sortOrder, isAvailable } = body;
+    const { name, description, price, sortOrder, isAvailable, canShip } = body;
 
     const product = await prisma.product.update({
       where: { id },
@@ -18,6 +18,7 @@ export async function PATCH(
         ...(price !== undefined && { price: parseFloat(price) }),
         ...(sortOrder !== undefined && { sortOrder }),
         ...(isAvailable !== undefined && { isAvailable }),
+        ...(canShip !== undefined && { canShip }),
       },
     });
 

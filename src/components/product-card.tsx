@@ -9,6 +9,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { formatEuro } from "@/lib/currency";
+import { Truck } from "lucide-react";
 import { SerializedProduct } from "@/lib/types";
 import { ProductModal } from "./product-modal";
 
@@ -56,17 +59,28 @@ export function ProductCard({
           )}
           <div className="flex items-center justify-between">
             <span className="text-lg font-semibold">
-              ${product.price.toFixed(2)}
+              {formatEuro(Number(product.price))}
             </span>
-            <Button
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsModalOpen(true);
-              }}
-            >
-              Add to Cart
-            </Button>
+            <div className="flex items-center gap-2">
+              {product.canShip && (
+                <Badge
+                  variant="outline"
+                  className="text-xs border-green-500 text-green-700 bg-green-50"
+                >
+                  <Truck className="h-3 w-3 mr-1" />
+                  Shippable
+                </Badge>
+              )}
+              <Button
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsModalOpen(true);
+                }}
+              >
+                Add to Cart
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

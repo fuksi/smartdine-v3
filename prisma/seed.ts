@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { seedBonbonCoffee } from "./seed-bonbon";
 
 const prisma = new PrismaClient();
 
@@ -720,6 +721,9 @@ async function main() {
       },
     ],
   });
+
+  // Seed Bonbon Coffee
+  await seedBonbonCoffee();
 
   console.log("✅ Seed completed successfully!");
 }

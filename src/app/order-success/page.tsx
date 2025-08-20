@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { CheckCircle } from "lucide-react";
+import { OrderSuccessHandler } from "@/components/order-success-handler";
 
 async function OrderSuccessContent({
   searchParams,
@@ -21,6 +22,7 @@ async function OrderSuccessContent({
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <OrderSuccessHandler />
       <Card className="max-w-md mx-auto">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">

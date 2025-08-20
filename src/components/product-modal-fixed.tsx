@@ -7,6 +7,7 @@ import * as RadioGroup from "@radix-ui/react-radio-group";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import { X, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatEuro, formatEuroModifier } from "@/lib/currency";
 import { SerializedProduct } from "@/lib/types";
 import { useCartStore } from "@/lib/store/cart";
 
@@ -144,7 +145,7 @@ export function ProductModal({
                 </Dialog.Description>
               )}
               <div className="text-lg font-semibold mt-2">
-                ${product.price.toFixed(2)}
+                {formatEuro(Number(product.price))}
               </div>
             </div>
 
@@ -178,7 +179,9 @@ export function ProductModal({
                         <label className="text-sm flex-1 flex justify-between">
                           <span>{value.name}</span>
                           {value.priceModifier > 0 && (
-                            <span>+${value.priceModifier.toFixed(2)}</span>
+                            <span>
+                              {formatEuroModifier(Number(value.priceModifier))}
+                            </span>
                           )}
                         </label>
                       </div>
@@ -220,7 +223,9 @@ export function ProductModal({
                         <label className="text-sm flex-1 flex justify-between">
                           <span>{value.name}</span>
                           {value.priceModifier > 0 && (
-                            <span>+${value.priceModifier.toFixed(2)}</span>
+                            <span>
+                              {formatEuroModifier(Number(value.priceModifier))}
+                            </span>
                           )}
                         </label>
                       </div>
@@ -255,7 +260,7 @@ export function ProductModal({
                 disabled={!canAddToCart}
                 className="flex-1 ml-4"
               >
-                Add to Cart - ${calculateTotalPrice().toFixed(2)}
+                Add to Cart - {formatEuro(calculateTotalPrice())}
               </Button>
             </div>
           </div>

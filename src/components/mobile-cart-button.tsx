@@ -32,9 +32,6 @@ export function MobileCartButton() {
           </div>
           <div className="text-right">
             <div className="font-bold text-lg">€{totalPrice.toFixed(2)}</div>
-            <div className="text-sm opacity-90">
-              {totalItems} item{totalItems !== 1 ? "s" : ""}
-            </div>
           </div>
         </Button>
       </Link>
