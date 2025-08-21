@@ -550,33 +550,6 @@ async function seedBonbonCoffee() {
     console.log("✓ Merchant already exists:", merchant.name);
   }
 
-  // Create or find location
-  let location = await prisma.merchantLocation.findUnique({
-    where: {
-      merchantId_slug: {
-        merchantId: merchant.id,
-        slug: "central",
-      },
-    },
-  });
-
-  if (!location) {
-    location = await prisma.merchantLocation.create({
-      data: {
-        merchantId: merchant.id,
-        name: "Bonbon Coffee Central",
-        slug: "central",
-        address: "Helsinki, Finland",
-        phone: "+358 123 456 789",
-        email: "hello@bonboncoffee.fi",
-        isActive: true,
-      },
-    });
-    console.log("✓ Created location:", location.name);
-  } else {
-    console.log("✓ Location already exists:", location.name);
-  }
-
   // Create opening hours
   const openingHoursData = [
     { day: 0, isOpen: true, open: "09:00", close: "18:00" }, // Sunday
@@ -589,14 +562,14 @@ async function seedBonbonCoffee() {
   ];
 
   const existingHours = await prisma.openingHour.findFirst({
-    where: { locationId: location.id },
+    where: { merchantId: merchant.id },
   });
 
   if (!existingHours) {
     for (const { day, isOpen, open, close } of openingHoursData) {
       await prisma.openingHour.create({
         data: {
-          locationId: location.id,
+          merchantId: merchant.id,
           dayOfWeek: day,
           isOpen,
           openTime: open,
@@ -618,7 +591,7 @@ async function seedBonbonCoffee() {
     const newAdmin = await prisma.adminUser.create({
       data: {
         email: "bonbon@test.com",
-        locationId: location.id,
+        merchantId: merchant.id,
         isActive: true,
       },
     });
@@ -636,7 +609,7 @@ async function seedBonbonCoffee() {
     const newLocalAdmin = await prisma.adminUser.create({
       data: {
         email: "bonbon@outlook.com",
-        locationId: location.id,
+        merchantId: merchant.id,
         isActive: true,
       },
     });
@@ -648,15 +621,15 @@ async function seedBonbonCoffee() {
     );
   }
 
-  // Create menu
+  // Create menu - using findFirst until Prisma client is fully updated
   let menu = await prisma.menu.findFirst({
-    where: { locationId: location.id },
+    where: { name: "Bonbon Menu" }, // temporary workaround
   });
 
   if (!menu) {
     menu = await prisma.menu.create({
       data: {
-        locationId: location.id,
+        merchantId: merchant.id,
         name: "Bonbon Menu",
         isActive: true,
       },
@@ -1308,7 +1281,6 @@ async function seedBonbonCoffee() {
   console.log(`✓ Created ${successCount} products`);
   console.log(`✓ Updated ${updatedCount} products with images`);
   console.log(`⏭️ Skipped ${skipCount} existing products`);
-  console.log(`📍 Location: ${location.name}`);
   console.log(`🏪 Merchant: ${merchant.name}`);
 }
 

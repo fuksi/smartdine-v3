@@ -2,21 +2,14 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 
 export default async function HomePage() {
-  // Find the first active merchant with an active location
+  // Find the first active merchant
   const firstMerchant = await prisma.merchant.findFirst({
     where: { isActive: true },
-    include: {
-      locations: {
-        where: { isActive: true },
-        take: 1,
-      },
-    },
   });
 
-  // If we found a merchant with a location, redirect to it
-  if (firstMerchant && firstMerchant.locations.length > 0) {
-    const location = firstMerchant.locations[0];
-    redirect(`/restaurant/${firstMerchant.slug}/${location.slug}`);
+  // If we found a merchant, redirect to it
+  if (firstMerchant) {
+    redirect(`/restaurant/${firstMerchant.slug}`);
   }
 
   // Fallback if no restaurants are available

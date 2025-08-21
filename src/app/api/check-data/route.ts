@@ -6,11 +6,7 @@ export async function GET() {
     // Check merchants
     const merchants = await prisma.merchant.findMany({
       include: {
-        locations: {
-          include: {
-            adminUsers: true,
-          },
-        },
+        adminUsers: true,
       },
     });
 
@@ -18,11 +14,7 @@ export async function GET() {
     const testAdmin = await prisma.adminUser.findUnique({
       where: { email: "test@outlook.com" },
       include: {
-        location: {
-          include: {
-            merchant: true,
-          },
-        },
+        merchant: true,
       },
     });
 
@@ -35,13 +27,9 @@ export async function GET() {
         merchants: merchants.map((m) => ({
           name: m.name,
           slug: m.slug,
-          locations: m.locations.map((l) => ({
-            name: l.name,
-            slug: l.slug,
-            adminUsers: l.adminUsers.map((a) => ({
-              email: a.email,
-              isActive: a.isActive,
-            })),
+          adminUsers: m.adminUsers.map((a) => ({
+            email: a.email,
+            isActive: a.isActive,
           })),
         })),
         testAdminExists: !!testAdmin,
@@ -49,8 +37,7 @@ export async function GET() {
           ? {
               email: testAdmin.email,
               isActive: testAdmin.isActive,
-              location: testAdmin.location?.name || "Unknown",
-              merchant: testAdmin.location?.merchant?.name || "Unknown",
+              merchant: testAdmin.merchant?.name || "Unknown",
             }
           : null,
         totalAdmins,

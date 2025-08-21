@@ -50,12 +50,7 @@ export default async function RestaurantPageServer({
     notFound();
   }
 
-  return (
-    <RestaurantPage
-      merchant={merchant}
-      merchantSlug={merchantSlug}
-    />
-  );
+  return <RestaurantPage merchant={merchant} merchantSlug={merchantSlug} />;
 }
 
 export async function generateStaticParams() {
@@ -69,11 +64,9 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({
-  params,
-}: RestaurantPageProps) {
+export async function generateMetadata({ params }: RestaurantPageProps) {
   const { merchantSlug } = await params;
-  
+
   const merchant = await prisma.merchant.findFirst({
     where: {
       slug: merchantSlug,

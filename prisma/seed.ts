@@ -44,46 +44,6 @@ async function main() {
     console.log("✓ Merchant already exists:", merchant.name);
   }
 
-  // Create or find location
-  let location = await prisma.merchantLocation.findUnique({
-    where: {
-      merchantId_slug: {
-        merchantId: merchant.id,
-        slug: "jatkasaari",
-      },
-    },
-  });
-
-  if (!location) {
-    location = await prisma.merchantLocation.create({
-      data: {
-        merchantId: merchant.id,
-        name: "Uuno Jätkäsaari",
-        slug: "jatkasaari",
-        address: "Jätkäsaari, Helsinki, Finland",
-        phone: "+358 123 456 789",
-        email: "jatkasaari@uuno.fi",
-        isActive: true,
-        // Stripe Connect configuration for development
-        stripeConnectAccountId:
-          process.env.DEV_MERCHANT_STRIPE_ACCOUNT_ID || null,
-        stripeConnectEnabled: !!process.env.DEV_MERCHANT_STRIPE_ACCOUNT_ID,
-        stripeConnectSetupAt: process.env.DEV_MERCHANT_STRIPE_ACCOUNT_ID
-          ? new Date()
-          : null,
-      },
-    });
-    console.log("✓ Created location:", location.name);
-    if (process.env.DEV_MERCHANT_STRIPE_ACCOUNT_ID) {
-      console.log(
-        "✓ Stripe Connect enabled for location with account:",
-        process.env.DEV_MERCHANT_STRIPE_ACCOUNT_ID
-      );
-    }
-  } else {
-    console.log("✓ Location already exists:", location.name);
-  }
-
   // Create opening hours
   const openingHoursData = [
     { day: 0, isOpen: true, open: "12:00", close: "19:00" }, // Sunday
@@ -97,14 +57,14 @@ async function main() {
 
   // Create opening hours if they don't exist
   const existingHours = await prisma.openingHour.findFirst({
-    where: { locationId: location.id },
+    where: { merchantId: merchant.id },
   });
 
   if (!existingHours) {
     for (const { day, isOpen, open, close } of openingHoursData) {
       await prisma.openingHour.create({
         data: {
-          locationId: location.id,
+          merchantId: merchant.id,
           dayOfWeek: day,
           isOpen,
           openTime: open,
@@ -112,6 +72,9 @@ async function main() {
         },
       });
     }
+    console.log("✓ Created opening hours");
+  } else {
+    console.log("✓ Opening hours already exist");
   }
 
   // Create admin user for testing if doesn't exist
@@ -125,15 +88,15 @@ async function main() {
     const newAdmin = await prisma.adminUser.create({
       data: {
         email: "test@outlook.com",
-        locationId: location.id,
+        merchantId: merchant.id,
         isActive: true,
       },
     });
     console.log(
       "Created admin user:",
       newAdmin.email,
-      "for location:",
-      location.name
+      "for merchant:",
+      merchant.name
     );
   } else {
     console.log("Admin user already exists:", existingAdmin.email);
@@ -141,13 +104,13 @@ async function main() {
 
   // Create menu
   let menu = await prisma.menu.findFirst({
-    where: { locationId: location.id },
+    where: { merchantId: merchant.id },
   });
 
   if (!menu) {
     menu = await prisma.menu.create({
       data: {
-        locationId: location.id,
+        merchantId: merchant.id,
         name: "Main Menu",
         isActive: true,
       },

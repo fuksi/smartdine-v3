@@ -43,7 +43,6 @@ export default function CartPage() {
     getShippingCost,
     getTotalWithShipping,
     merchantSlug,
-    locationSlug,
   } = store;
 
   // Get current cart data using selectors
@@ -51,7 +50,7 @@ export default function CartPage() {
   const customerInfo = getCurrentCustomerInfo(store);
   const fulfilmentType = getCurrentFulfilmentType(store);
   const shippingAddress = getCurrentShippingAddress(store);
-  const locationId = store.currentLocationId;
+  const merchantId = store.currentMerchantId;
 
   const [formData, setFormData] = useState({
     name:
@@ -101,8 +100,8 @@ export default function CartPage() {
 
   // Pay at shop payment handler
   const handlePayAtShopOrder = async (customerPhone: string) => {
-    if (!locationId) {
-      alert("No location selected. Please go back and select a restaurant.");
+    if (!merchantId) {
+      alert("No merchant selected. Please go back and select a restaurant.");
       return;
     }
 
@@ -115,7 +114,7 @@ export default function CartPage() {
 
       // Prepare pay at shop order data
       const orderData = {
-        locationId,
+        merchantId,
         customerPhone,
         totalAmount: totalWithShipping,
         fulfilmentType: fulfilmentType,
@@ -212,8 +211,8 @@ export default function CartPage() {
       }
     }
 
-    if (!locationId) {
-      alert("No location selected. Please go back and select a restaurant.");
+    if (!merchantId) {
+      alert("No merchant selected. Please go back and select a restaurant.");
       return;
     }
 
@@ -241,7 +240,7 @@ export default function CartPage() {
 
       // Prepare order data
       const orderData = {
-        locationId,
+        merchantId,
         customerName: formData.name.trim(),
         customerPhone: formData.phone.trim(),
         customerEmail: formData.email.trim() || null,
@@ -337,10 +336,7 @@ export default function CartPage() {
   }
 
   // Create the back to menu link
-  const backToMenuHref =
-    merchantSlug && locationSlug
-      ? `/restaurant/${merchantSlug}/${locationSlug}`
-      : "/";
+  const backToMenuHref = merchantSlug ? `/restaurant/${merchantSlug}` : "/";
 
   return (
     <div className="container mx-auto px-4 py-8">

@@ -1,0 +1,335 @@
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { canItemsBeShipped, calculateShippingCost } from "@/lib/shipping";
+
+export interface CartItem {
+  id: string;
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  canShip?: boolean;
+  options: {
+    optionId: string;
+    optionName: string;
+    valueId: string;
+    valueName: string;
+    priceModifier: number;
+  }[];
+}
+
+interface CartState {
+  // Store carts per merchant
+  cartsByMerchant: Record<
+    string,
+    {
+      items: CartItem[];
+      fulfilmentType: "PICKUP" | "SHIPPING";
+      customerInfo: {
+        name: string;
+        phone: string;
+        email: string;
+      } | null;
+      shippingAddress: {
+        street: string;
+        postalCode: string;
+        city: string;
+      } | null;
+    }
+  >;
+  // Current active merchant context
+  currentMerchantId: string | null;
+  merchantSlug: string | null;
+
+  addItem: (item: CartItem) => void;
+  removeItem: (itemId: string) => void;
+  updateQuantity: (itemId: string, quantity: number) => void;
+  clearCart: () => void;
+  clearCartForMerchant: (merchantId: string) => void;
+  setLocation: (
+    merchantId: string,
+    merchantSlug?: string,
+    locationSlug?: string // Keep for backward compatibility during migration
+  ) => void;
+  setCustomerInfo: (info: {
+    name: string;
+    phone: string;
+    email: string;
+  }) => void;
+  setFulfilmentType: (type: "PICKUP" | "SHIPPING") => void;
+  setShippingAddress: (address: {
+    street: string;
+    postalCode: string;
+    city: string;
+  }) => void;
+  canAllItemsBeShipped: () => boolean;
+  getTotalPrice: () => number;
+  getTotalItems: () => number;
+  getShippingCost: () => number;
+  getTotalWithShipping: () => number;
+}
+
+// Selector functions to get current cart data
+export const getCurrentCart = (state: CartState) => {
+  const { currentMerchantId, cartsByMerchant } = state;
+  if (!currentMerchantId) return null;
+  return cartsByMerchant[currentMerchantId] || null;
+};
+
+export const getCurrentItems = (state: CartState) => {
+  const currentCart = getCurrentCart(state);
+  return currentCart?.items || [];
+};
+
+export const getCurrentFulfilmentType = (state: CartState) => {
+  const currentCart = getCurrentCart(state);
+  return currentCart?.fulfilmentType || "PICKUP";
+};
+
+export const getCurrentCustomerInfo = (state: CartState) => {
+  const currentCart = getCurrentCart(state);
+  return currentCart?.customerInfo || null;
+};
+
+export const getCurrentShippingAddress = (state: CartState) => {
+  const currentCart = getCurrentCart(state);
+  return currentCart?.shippingAddress || null;
+};
+
+export const useCartStore = create<CartState>()(
+  persist(
+    (set, get) => ({
+      cartsByMerchant: {},
+      currentMerchantId: null,
+      merchantSlug: null,
+
+      addItem: (item) => {
+        const { currentMerchantId } = get();
+        if (!currentMerchantId) return;
+
+        set((state) => {
+          const currentCart = state.cartsByMerchant[currentMerchantId] || {
+            items: [],
+            fulfilmentType: "PICKUP" as const,
+            customerInfo: null,
+            shippingAddress: null,
+          };
+
+          const existingItemIndex = currentCart.items.findIndex(
+            (cartItem) =>
+              cartItem.productId === item.productId &&
+              JSON.stringify(cartItem.options) === JSON.stringify(item.options)
+          );
+
+          let updatedItems;
+          if (existingItemIndex >= 0) {
+            updatedItems = [...currentCart.items];
+            updatedItems[existingItemIndex].quantity += item.quantity;
+          } else {
+            updatedItems = [...currentCart.items, item];
+          }
+
+          return {
+            cartsByMerchant: {
+              ...state.cartsByMerchant,
+              [currentMerchantId]: {
+                ...currentCart,
+                items: updatedItems,
+              },
+            },
+          };
+        });
+      },
+
+      removeItem: (itemId) => {
+        const { currentMerchantId } = get();
+        if (!currentMerchantId) return;
+
+        set((state) => {
+          const currentCart = state.cartsByMerchant[currentMerchantId];
+          if (!currentCart) return state;
+
+          return {
+            cartsByMerchant: {
+              ...state.cartsByMerchant,
+              [currentMerchantId]: {
+                ...currentCart,
+                items: currentCart.items.filter((item) => item.id !== itemId),
+              },
+            },
+          };
+        });
+      },
+
+      updateQuantity: (itemId, quantity) => {
+        const { currentMerchantId } = get();
+        if (!currentMerchantId) return;
+
+        set((state) => {
+          const currentCart = state.cartsByMerchant[currentMerchantId];
+          if (!currentCart) return state;
+
+          return {
+            cartsByMerchant: {
+              ...state.cartsByMerchant,
+              [currentMerchantId]: {
+                ...currentCart,
+                items: currentCart.items
+                  .map((item) =>
+                    item.id === itemId ? { ...item, quantity } : item
+                  )
+                  .filter((item) => item.quantity > 0),
+              },
+            },
+          };
+        });
+      },
+
+      clearCart: () => {
+        const { currentMerchantId } = get();
+        if (!currentMerchantId) return;
+
+        set((state) => ({
+          cartsByMerchant: {
+            ...state.cartsByMerchant,
+            [currentMerchantId]: {
+              items: [],
+              fulfilmentType: "PICKUP" as const,
+              customerInfo: null,
+              shippingAddress: null,
+            },
+          },
+        }));
+      },
+
+      clearCartForMerchant: (merchantId) => {
+        set((state) => {
+          const { [merchantId]: _, ...restCarts } = state.cartsByMerchant;
+          return {
+            cartsByMerchant: restCarts,
+          };
+        });
+      },
+
+      setLocation: (merchantId, merchantSlug, _locationSlug) => {
+        set({
+          currentMerchantId: merchantId,
+          merchantSlug: merchantSlug || null,
+        });
+      },
+
+      setCustomerInfo: (info) => {
+        const { currentMerchantId } = get();
+        if (!currentMerchantId) return;
+
+        set((state) => {
+          const currentCart = state.cartsByMerchant[currentMerchantId] || {
+            items: [],
+            fulfilmentType: "PICKUP" as const,
+            customerInfo: null,
+            shippingAddress: null,
+          };
+
+          return {
+            cartsByMerchant: {
+              ...state.cartsByMerchant,
+              [currentMerchantId]: {
+                ...currentCart,
+                customerInfo: info,
+              },
+            },
+          };
+        });
+      },
+
+      setFulfilmentType: (type) => {
+        const { currentMerchantId } = get();
+        if (!currentMerchantId) return;
+
+        set((state) => {
+          const currentCart = state.cartsByMerchant[currentMerchantId] || {
+            items: [],
+            fulfilmentType: "PICKUP" as const,
+            customerInfo: null,
+            shippingAddress: null,
+          };
+
+          return {
+            cartsByMerchant: {
+              ...state.cartsByMerchant,
+              [currentMerchantId]: {
+                ...currentCart,
+                fulfilmentType: type,
+              },
+            },
+          };
+        });
+      },
+
+      setShippingAddress: (address) => {
+        const { currentMerchantId } = get();
+        if (!currentMerchantId) return;
+
+        set((state) => {
+          const currentCart = state.cartsByMerchant[currentMerchantId] || {
+            items: [],
+            fulfilmentType: "PICKUP" as const,
+            customerInfo: null,
+            shippingAddress: null,
+          };
+
+          return {
+            cartsByMerchant: {
+              ...state.cartsByMerchant,
+              [currentMerchantId]: {
+                ...currentCart,
+                shippingAddress: address,
+              },
+            },
+          };
+        });
+      },
+
+      canAllItemsBeShipped: () => {
+        const items = getCurrentItems(get());
+        return canItemsBeShipped(items);
+      },
+
+      getTotalPrice: () => {
+        const items = getCurrentItems(get());
+        return items.reduce((total, item) => {
+          const basePrice = item.price * item.quantity;
+          const optionsPrice = item.options.reduce(
+            (sum, option) => sum + option.priceModifier * item.quantity,
+            0
+          );
+          return total + basePrice + optionsPrice;
+        }, 0);
+      },
+
+      getTotalItems: () => {
+        const items = getCurrentItems(get());
+        return items.reduce((total, item) => total + item.quantity, 0);
+      },
+
+      getShippingCost: () => {
+        const items = getCurrentItems(get());
+        const fulfilmentType = getCurrentFulfilmentType(get());
+        return calculateShippingCost(items, fulfilmentType);
+      },
+
+      getTotalWithShipping: () => {
+        const { getTotalPrice, getShippingCost } = get();
+        return getTotalPrice() + getShippingCost();
+      },
+    }),
+    {
+      name: "smartdine-cart",
+      partialize: (state) => ({
+        cartsByMerchant: state.cartsByMerchant,
+        currentMerchantId: state.currentMerchantId,
+        merchantSlug: state.merchantSlug,
+      }),
+    }
+  )
+);

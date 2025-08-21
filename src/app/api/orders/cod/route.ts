@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const {
-      locationId,
+      merchantId,
       customerPhone,
       items,
       totalAmount,
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validate required fields for pay at shop
-    if (!locationId || !customerPhone || !items || items.length === 0) {
+    if (!merchantId || !customerPhone || !items || items.length === 0) {
       return NextResponse.json(
         { error: "Missing required fields for pay at shop order" },
         { status: 400 }
@@ -38,14 +38,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify this is for Bonbon Coffee
-    const location = await prisma.merchantLocation.findUnique({
-      where: { id: locationId },
-      include: {
-        merchant: true,
-      },
+    const merchant = await prisma.merchant.findUnique({
+      where: { id: merchantId },
     });
 
-    if (!location || location.merchant.slug !== "bonbon-coffee") {
+    if (!merchant || merchant.slug !== "bonbon-coffee") {
       return NextResponse.json(
         { error: "Pay at shop is only available for Bonbon Coffee" },
         { status: 400 }
@@ -79,7 +76,7 @@ export async function POST(request: NextRequest) {
     const order = await prisma.order.create({
       data: {
         displayId,
-        locationId,
+        merchantId,
         customerId: customer.id,
         customerName:
           `${customer.firstName || ""} ${customer.lastName || ""}`.trim() ||
